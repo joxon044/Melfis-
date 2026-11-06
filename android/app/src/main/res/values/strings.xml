@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Melfis - Gul do'koni</string>
-    <string name="title_activity_main">Melfis - Gul do'koni</string>
+    <string name="app_name">Melfis Flowers</string>
+    <string name="title_activity_main">Melfis Flowers</string>
     <string name="package_name">uz.melfis.flowers</string>
     <string name="custom_url_scheme">uz.melfis.flowers</string>
 </resources>
