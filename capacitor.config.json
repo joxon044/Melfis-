@@ -1,0 +1,8 @@
+{
+  "appId": "uz.melfis.flowers",
+  "appName": "Melfis - Gul do'koni",
+  "webDir": "dist",
+  "iosScheme": "https",
+  "androidScheme": "https",
+  "backgroundColor": "#FAF7F2"
+}

@@ -28,12 +28,13 @@ export default function CartDrawer({
   onRemoveItem,
   onClearCart,
   onOrderSuccess,
+  currentUser,
+  onRequireAuth,
+  onCreateOrder,
 }) {
-  if (!isOpen) return null;
-
   // Checkout form state
   const [customerName, setCustomerName] = useState('');
-  const [phone, setPhone] = useState('+998 ');
+  const [phone, setPhone] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState(SAMARKAND_DISTRICTS[0]);
   const [address, setAddress] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('Bugun (Tezkor)');
@@ -53,63 +54,79 @@ export default function CartDrawer({
   const grandTotal = itemsSubtotal + deliveryFee;
 
   const triggerConfetti = () => {
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    } catch (e) {
-      // ignore
-    }
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
   };
 
-  const handleCheckout = (isTelegram = false) => {
+  const handleCheckout = async (isTelegram = false) => {
     if (cartItems.length === 0) return;
 
-    if (!customerName.trim() || phone.trim().length < 9) {
+    if (!currentUser) {
+      setFormError('Buyurtma berish uchun avval akkauntga kiring.');
+      onRequireAuth();
+      return;
+    }
+
+    const resolvedName = customerName.trim() || currentUser.name;
+    const resolvedPhone = phone.trim() || currentUser.phone;
+    if (!resolvedName || !resolvedPhone || resolvedPhone.trim().length < 7) {
       setFormError("Iltimos, ismingiz va telefon raqamingizni kiriting!");
       return;
     }
 
     setFormError('');
     setIsSubmitting(true);
-
-    const orderData = {
-      orderId: 'MF-' + Math.floor(100000 + Math.random() * 900000),
-      items: cartItems,
-      subtotal: itemsSubtotal,
-      deliveryFee: deliveryFee,
-      totalPrice: grandTotal,
-      customerName,
-      phone,
-      district: selectedDistrict.name,
-      address,
-      deliveryDate,
-      deliveryTime,
-      isSurprise,
-      recipientName,
-      recipientPhone,
-      cardMessage,
-      notes,
-      paymentMethod,
-      createdAt: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
-    };
-
+    let telegramWindow = null;
     if (isTelegram) {
-      const url = generateTelegramOrderUrl(orderData);
-      window.open(url, '_blank');
+      telegramWindow = window.open('about:blank', '_blank');
     }
 
-    triggerConfetti();
+    try {
+      const order = await onCreateOrder({
+        items: cartItems.map(({ id, quantity, isCustom, customConfig }) => ({
+          id,
+          quantity,
+          ...(isCustom ? { isCustom: true, customConfig } : {}),
+        })),
+        customerName: resolvedName,
+        phone: resolvedPhone,
+        district: selectedDistrict.name,
+        address,
+        deliveryDate,
+        deliveryTime,
+        isSurprise,
+        recipientName,
+        recipientPhone,
+        cardMessage,
+        notes,
+        paymentMethod,
+      });
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      onOrderSuccess(orderData);
+      if (isTelegram) {
+        const url = generateTelegramOrderUrl(order);
+        if (telegramWindow) {
+          telegramWindow.location.replace(url);
+        } else {
+          window.open(url, '_blank');
+        }
+      }
+
+      triggerConfetti();
+      onOrderSuccess(order);
       onClearCart();
       onClose();
-    }, 700);
+    } catch (error) {
+      if (telegramWindow) telegramWindow.close();
+      setFormError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs animate-fadeIn">
@@ -324,15 +341,17 @@ export default function CartDrawer({
                     <input
                       type="text"
                       placeholder="Ismingiz *"
-                      value={customerName}
+                      value={customerName || currentUser?.name || ''}
                       onChange={(e) => setCustomerName(e.target.value)}
+                      readOnly={Boolean(currentUser)}
                       className="text-xs p-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-400"
                     />
                     <input
                       type="tel"
                       placeholder="Telefon raqamingiz *"
-                      value={phone}
+                      value={phone || currentUser?.phone || ''}
                       onChange={(e) => setPhone(e.target.value)}
+                      readOnly={Boolean(currentUser)}
                       className="text-xs p-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-400 font-mono"
                     />
                   </div>

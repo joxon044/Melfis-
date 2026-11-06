@@ -6,15 +6,14 @@ import {
   Send, 
   Navigation, 
   ExternalLink,
-  Sparkles,
-  ShieldCheck,
-  Check
+  X
 } from 'lucide-react';
 import { SHOP_INFO } from '../data/flowers';
 
 export default function LocationSection() {
   const [isLocationCardOpen, setIsLocationCardOpen] = useState(false);
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=Samarkand+Pavarot`;
+  const locationQuery = 'Pavarot chorrahasi, Samarqand, Uzbekistan';
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery)}`;
   const yandexMapsUrl = `https://yandex.com/maps/?text=Samarqand+Pavarot+choraxasi`;
 
   return (
@@ -137,6 +136,27 @@ export default function LocationSection() {
 
           {/* Interactive Map Visual Presentation */}
           <div className="lg:col-span-7 bg-stone-100 rounded-3xl border border-stone-200 overflow-hidden relative min-h-[380px] flex flex-col justify-between p-6 sm:p-8">
+            {isLocationCardOpen ? (
+              <>
+                <iframe
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(locationQuery)}&output=embed`}
+                  title="MELFIS FLOWER SHOP Google xaritasi"
+                  className="absolute inset-0 h-full w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsLocationCardOpen(false)}
+                  aria-label="Xaritani yopish"
+                  className="absolute right-4 top-4 z-10 rounded-full bg-white p-2 text-stone-700 shadow-md transition-colors hover:bg-stone-100"
+                >
+                  <X size={20} />
+                </button>
+              </>
+            ) : (
+              <>
             
             {/* Background Graphic representing Samarkand Grid */}
             <div className="absolute inset-0 bg-[#e8ece9] opacity-80">
@@ -165,43 +185,16 @@ export default function LocationSection() {
               </span>
             </div>
 
-            {/* Interactive Map Pin and Location Card */}
-            <div
-              className={`relative z-10 my-auto mx-auto text-center backdrop-blur-md transition-all duration-500 ease-in-out ${
-                isLocationCardOpen
-                  ? 'w-full max-w-sm rounded-3xl border border-rose-200 bg-white/95 p-6 shadow-xl'
-                  : 'h-16 w-16 rounded-full'
-              }`}
-            >
+            {/* Interactive Map Pin */}
+            <div className="relative z-10 my-auto mx-auto text-center">
               <button
                 type="button"
-                onClick={() => setIsLocationCardOpen((isOpen) => !isOpen)}
-                aria-label={isLocationCardOpen ? 'Joylashuv kartasini yopish' : 'Samarqand Pavarot choraxasi manzilini ko‘rish'}
-                aria-expanded={isLocationCardOpen}
-                className={`flex h-16 w-16 items-center justify-center rounded-full bg-rose-600 text-white shadow-lg ring-4 ring-white transition-all duration-500 hover:bg-rose-700 ${
-                  isLocationCardOpen
-                    ? 'absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2'
-                    : 'animate-bounce'
-                }`}
+                onClick={() => setIsLocationCardOpen(true)}
+                aria-label="Google xaritada Samarqand Pavarot choraxasini ko‘rish"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-rose-600 text-white shadow-lg ring-4 ring-white transition-colors hover:bg-rose-700"
               >
                 <MapPin size={26} />
               </button>
-              {isLocationCardOpen && (
-                <div className="animate-fadeIn">
-                  <h3 className="mt-3 font-serif text-lg font-bold text-stone-900">
-                    MELFIS FLOWER SHOP
-                  </h3>
-                  <p className="mt-1 text-xs font-medium text-stone-600">
-                    Pavarot choraxasi, Samarqand
-                  </p>
-                  <div className="mt-3 flex items-center justify-center gap-4 border-t border-stone-100 pt-3 text-xs text-stone-500">
-                    <span className="flex items-center gap-1 font-semibold text-emerald-700">
-                      <Check size={14} /> 24/7 Ochiq
-                    </span>
-                    <span>Yetkazish: 30-40 daq</span>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Landmark tags on map */}
@@ -216,6 +209,8 @@ export default function LocationSection() {
                 🚂 Vokzal (15 daqiqa)
               </div>
             </div>
+              </>
+            )}
 
           </div>
 

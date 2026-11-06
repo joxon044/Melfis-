@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { PRODUCTS, SHOP_INFO } from './data/flowers';
+import { apiRequest } from './api';
 
 // Components
 import Navbar from './components/Navbar';
@@ -17,6 +18,8 @@ import LocationSection from './components/LocationSection';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import QuickContactFloating from './components/QuickContactFloating';
+import AccountModal from './components/AccountModal';
+import AdminOrdersPanel from './components/AdminOrdersPanel';
 
 export default function App() {
   // Cart & Wishlist states with localStorage persistence
@@ -56,6 +59,24 @@ export default function App() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [orderSuccessData, setOrderSuccessData] = useState(null);
   const [activeMobileTab, setActiveMobileTab] = useState('home');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    let isActive = true;
+    apiRequest('/api/auth/me')
+      .then(({ user }) => {
+        if (isActive) setCurrentUser(user);
+      })
+      .catch((error) => {
+        if (isActive) setAuthError(error.message);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   // Cart operations
   const handleAddToCart = (product) => {
@@ -158,6 +179,8 @@ export default function App() {
         wishlistCount={wishlistItems.length}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
+        onOpenAccount={() => setIsAccountOpen(true)}
+        user={currentUser}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onSubmitSearch={(query) => {
@@ -274,6 +297,9 @@ export default function App() {
       <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
+        currentUser={currentUser}
+        onRequireAuth={() => setIsAccountOpen(true)}
+        onCreateOrder={(order) => apiRequest('/api/orders', { method: 'POST', body: order }).then((result) => result.order)}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveFromCart}
@@ -294,6 +320,26 @@ export default function App() {
         orderData={orderSuccessData}
         onClose={() => setOrderSuccessData(null)}
       />
+
+      <AccountModal
+        isOpen={isAccountOpen}
+        user={currentUser}
+        initialError={authError}
+        onClose={() => setIsAccountOpen(false)}
+        onAuth={(user) => {
+          setCurrentUser(user);
+          setAuthError('');
+          setIsAccountOpen(false);
+        }}
+        onLogout={() => setCurrentUser(null)}
+        onOpenAdmin={() => {
+          setIsAccountOpen(false);
+          setIsAdminPanelOpen(true);
+        }}
+      />
+      {isAdminPanelOpen && (
+        <AdminOrdersPanel onClose={() => setIsAdminPanelOpen(false)} />
+      )}
 
       {/* Floating 24/7 Action Button */}
       <QuickContactFloating />

@@ -27,19 +27,10 @@ export default function Footer({ onCategoryClick }) {
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
               <img 
-                src="/images/logo.png" 
+                src="/images/footer-logo.png"
                 alt="MELFIS FLOWER SHOP" 
-                className="h-12 w-auto object-contain brightness-0 invert" 
-                onError={(e) => { e.target.style.display = 'none'; }}
+                className="h-auto w-32 max-w-full rounded-sm object-contain"
               />
-              <div>
-                <span className="font-serif text-2xl font-bold tracking-wider text-white">
-                  MELFIS
-                </span>
-                <span className="block text-[10px] tracking-[0.25em] uppercase text-rose-300 font-semibold">
-                  Flower Shop • Samarqand
-                </span>
-              </div>
             </div>
 
             <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">

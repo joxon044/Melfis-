@@ -31,7 +31,15 @@ export function generateTelegramOrderUrl(orderDetails) {
     text += `${idx + 1}. *${item.name}*\n`;
     text += `   Miqdor: ${item.quantity} dona | Narxi: ${formatPrice(item.price * item.quantity)}\n`;
     if (item.customDetails) {
-      text += `   _Tafsilotlar: ${item.customDetails}_\n`;
+      const details = typeof item.customDetails === 'string'
+        ? item.customDetails
+        : [
+          item.customDetails.flowerLines?.join(', '),
+          item.customDetails.wrappingName ? `O‘rov: ${item.customDetails.wrappingName}` : '',
+          item.customDetails.addons?.length ? `Qo‘shimchalar: ${item.customDetails.addons.join(', ')}` : '',
+          item.customDetails.customNote ? `Tabriknoma: "${item.customDetails.customNote}"` : '',
+        ].filter(Boolean).join('; ');
+      if (details) text += `   _Tafsilotlar: ${details}_\n`;
     }
   });
 

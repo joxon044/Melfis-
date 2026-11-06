@@ -78,6 +78,12 @@ export default function BouquetBuilder({ onAddToCart }) {
       price: totalPrice,
       image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=800&q=80",
       isCustom: true,
+      customConfig: {
+        flowers: selectedFlowers.map(({ flower, count }) => ({ id: flower.id, count })),
+        wrappingId: selectedWrapping.id,
+        addonIds: selectedAddons,
+        customNote,
+      },
       customDetails: `Gullar: ${flowerDetails}, O'rov: ${selectedWrapping.name}, Qo'shimchalar: ${selectedAddons.map(id => BUILDER_ADDONS.find(a => a.id === id)?.name).join(', ')}${customNote ? `, Tabriknoma: "${customNote}"` : ''}`,
       quantity: 1,
     };

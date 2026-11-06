@@ -10,7 +10,8 @@ import {
   X, 
   Send, 
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  UserRound
 } from 'lucide-react';
 import { SHOP_INFO } from '../data/flowers';
 
@@ -19,6 +20,8 @@ export default function Navbar({
   wishlistCount,
   onOpenCart,
   onOpenWishlist,
+  onOpenAccount,
+  user,
   searchQuery,
   setSearchQuery,
   onSubmitSearch,
@@ -185,6 +188,19 @@ export default function Navbar({
                   <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-scale">
                     {wishlistCount}
                   </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenAccount}
+                className="relative rounded-full p-1.5 text-stone-700 transition-colors hover:bg-stone-100 hover:text-rose-600 sm:p-2"
+                aria-label={user ? `Akkaunt: ${user.name}` : 'Akkauntga kirish'}
+                title={user?.name || 'Akkauntga kirish'}
+              >
+                <UserRound size={20} />
+                {user?.role === 'admin' && (
+                  <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-white bg-rose-500" />
                 )}
               </button>
 
