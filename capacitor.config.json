@@ -2,6 +2,11 @@
   "appId": "uz.melfis.flowers",
   "appName": "Melfis Flowers",
   "webDir": "dist",
+  "server": {
+    "url": "https://melfis.vercel.app",
+    "cleartext": true,
+    "errorPath": "error.html"
+  },
   "iosScheme": "https",
   "androidScheme": "https",
   "backgroundColor": "#FAF7F2"

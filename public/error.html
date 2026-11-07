@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Internet yo‘q - Melfis</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #FAF7F2;
+      color: #1C3F3A;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .icon-wrapper {
+      position: relative;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pulse-bg {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: rgba(255, 228, 230, 0.6);
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+    .icon-box {
+      position: relative;
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #FFE4E6;
+    }
+    .icon-box svg {
+      width: 42px;
+      height: 42px;
+      stroke: #F43F5E;
+      stroke-width: 2.2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: rgba(28, 63, 58, 0.75);
+      max-width: 320px;
+      margin-bottom: 32px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background-color: #1C3F3A;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 14px 32px;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(28, 63, 58, 0.2);
+      transition: all 0.2s ease;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active {
+      transform: scale(0.96);
+      background-color: #142E2A;
+    }
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      fill: none;
+    }
+    .spinning {
+      animation: spin 1s linear infinite;
+    }
+    .brand {
+      position: absolute;
+      bottom: 28px;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(28, 63, 58, 0.4);
+      font-weight: 600;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.15); opacity: 0.3; }
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="icon-wrapper">
+    <div class="pulse-bg"></div>
+    <div class="icon-box">
+      <!-- WifiOff SVG icon -->
+      <svg viewBox="0 0 24 24">
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+    </div>
+  </div>
+
+  <h1>Internet bilan aloqa yo‘q</h1>
+  <p>Melfis ilovasi to‘liq ishlashi uchun internet kerak. Iltimos, Wi-Fi yoki mobil internetingizni tekshirib qayta urining.</p>
+
+  <button class="btn" id="retryBtn" onclick="handleRetry()">
+    <svg id="refreshIcon" viewBox="0 0 24 24">
+      <path d="M21 2v6h-6"></path>
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+      <path d="M3 22v-6h6"></path>
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+    </svg>
+    <span id="btnText">Qayta urinish</span>
+  </button>
+
+  <div class="brand">Melfis Flower Shop</div>
+
+  <script>
+    function handleRetry() {
+      const icon = document.getElementById('refreshIcon');
+      const text = document.getElementById('btnText');
+      icon.classList.add('spinning');
+      text.innerText = 'Tekshirilmoqda...';
+
+      setTimeout(() => {
+        // Navigate back to live site
+        window.location.href = 'https://melfis.vercel.app';
+      }, 600);
+    }
+
+    // Auto-detect if network reconnects
+    window.addEventListener('online', () => {
+      window.location.href = 'https://melfis.vercel.app';
+    });
+  </script>
+</body>
+</html>
+

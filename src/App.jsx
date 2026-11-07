@@ -20,6 +20,7 @@ import MobileBottomNav from './components/MobileBottomNav';
 import QuickContactFloating from './components/QuickContactFloating';
 import AccountModal from './components/AccountModal';
 import AdminOrdersPanel from './components/AdminOrdersPanel';
+import OfflineScreen from './components/OfflineScreen';
 
 export default function App() {
   // Cart & Wishlist states with localStorage persistence
@@ -63,6 +64,22 @@ export default function App() {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -170,6 +187,10 @@ export default function App() {
 
   const totalCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  if (!isOnline) {
+    return <OfflineScreen onRetry={() => setIsOnline(navigator.onLine)} />;
+  }
+
   return (
     <div className="min-h-screen pb-20 2xl:pb-0 bg-[#FAF7F2] text-[#1A1818] flex flex-col font-sans">
       
@@ -203,7 +224,7 @@ export default function App() {
       />
 
       {/* Main Catalog Section */}
-      <section id="catalog" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <section id="catalog" className="pt-4 pb-12 sm:pt-8 sm:pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
         {/* Section Heading */}
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">

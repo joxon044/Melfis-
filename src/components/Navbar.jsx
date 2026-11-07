@@ -177,10 +177,10 @@ export default function Navbar({
                 <Search size={20} />
               </button>
 
-              {/* Wishlist Button */}
+              {/* Wishlist Button - hidden on mobile (available in bottom nav) */}
               <button
                 onClick={onOpenWishlist}
-                className="relative p-1.5 sm:p-2 text-stone-700 hover:text-rose-600 rounded-full hover:bg-stone-100 transition-colors"
+                className="hidden md:flex relative p-1.5 sm:p-2 text-stone-700 hover:text-rose-600 rounded-full hover:bg-stone-100 transition-colors"
                 aria-label="Sevimlilar"
               >
                 <Heart size={20} />
@@ -204,8 +204,8 @@ export default function Navbar({
                 )}
               </button>
 
-              <div className="flex h-10 shrink-0 items-center gap-1">
-                {/* Cart Button */}
+              {/* Cart Button - hidden on mobile (available in bottom nav) */}
+              <div className="hidden md:flex h-10 shrink-0 items-center gap-1">
                 <button
                   onClick={onOpenCart}
                   className="relative flex h-10 items-center gap-2 rounded-full bg-[#1C3F3A] px-2.5 py-2 text-white shadow-sm transition-all hover:bg-[#15302C] active:scale-95 sm:px-3.5"
