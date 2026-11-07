@@ -62,7 +62,7 @@ export default function Navbar({
   return (
     <header className="sticky top-0 z-40 w-full transition-all duration-300">
       {/* Top Notification Bar */}
-      <div className="bg-[#1C3F3A] text-white text-xs sm:text-sm py-2 px-3 sm:px-4">
+      <div className="hidden bg-[#1C3F3A] text-white text-xs sm:text-sm py-2 px-3 sm:px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center">
             <span className="flex items-center gap-1.5 font-medium text-rose-200">
