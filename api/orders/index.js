@@ -3,6 +3,7 @@ import { getSessionUser } from '../../server/auth.js';
 import { getPool } from '../../server/db.js';
 import { handleApiError, handleCapacitorCors, methodNotAllowed, requireBody, requireSameOrigin, sendJson } from '../../server/http.js';
 import { validateOrder } from '../../server/order-validation.js';
+import { sendTelegramOrderNotification } from '../../server/telegram.js';
 
 export default async function orders(req, res) {
   if (handleCapacitorCors(req, res)) return;
@@ -64,6 +65,12 @@ export default async function orders(req, res) {
       }
 
       await client.query('COMMIT');
+
+      // Yangi buyurtma haqida Telegramga xabar yuborish
+      await sendTelegramOrderNotification({
+        ...order,
+        orderNumber,
+      });
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

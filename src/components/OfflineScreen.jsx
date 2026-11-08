@@ -1,5 +1,46 @@
 import React, { useState } from 'react';
-import { WifiOff, RefreshCw } from 'lucide-react';
+
+// Standalone SVG Icons (hech qanday tashqi kutubxonaga bog'liq emas)
+function WifiOffIcon({ className = "h-10 w-10 text-rose-500" }) {
+  return (
+    <svg 
+      className={className} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2.2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <line x1="2" y1="2" x2="22" y2="22" />
+      <path d="M12 20h.01" />
+      <path d="M8.5 16.5a5 5 0 0 1 7 0" />
+      <path d="M5 12.5a10 10 0 0 1 5.5-2" />
+      <path d="M19 12.5a10 10 0 0 0-3-1.8" />
+      <path d="M2 8.8a15 15 0 0 1 6.5-2.5" />
+      <path d="M22 8.8a15 15 0 0 0-4.5-2" />
+    </svg>
+  );
+}
+
+function RefreshCwIcon({ className = "h-4 w-4" }) {
+  return (
+    <svg 
+      className={className} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2.2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+      <path d="M16 16h5v5" />
+    </svg>
+  );
+}
 
 export default function OfflineScreen({ onRetry }) {
   const [checking, setChecking] = useState(false);
@@ -10,9 +51,7 @@ export default function OfflineScreen({ onRetry }) {
     setShowErrorToast(false);
 
     try {
-      // Try to ping or check online status
       if (navigator.onLine) {
-        // Quick fetch test
         await fetch('/favicon.ico', { method: 'HEAD', cache: 'no-store' });
         if (onRetry) onRetry();
       } else {
@@ -33,7 +72,7 @@ export default function OfflineScreen({ onRetry }) {
         <div className="absolute h-36 w-36 rounded-full bg-rose-100/60 animate-pulse" />
         <div className="absolute h-28 w-28 rounded-full bg-rose-200/50" />
         <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg border border-rose-100">
-          <WifiOff className="h-10 w-10 text-rose-500" strokeWidth={2.2} />
+          <WifiOffIcon className="h-10 w-10 text-rose-500" />
         </div>
       </div>
 
@@ -51,7 +90,7 @@ export default function OfflineScreen({ onRetry }) {
         disabled={checking}
         className="inline-flex items-center justify-center gap-2.5 rounded-full bg-[#1C3F3A] px-8 py-3.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#142e2a] active:scale-95 disabled:opacity-70 cursor-pointer"
       >
-        <RefreshCw className={`h-4 w-4 ${checking ? 'animate-spin' : ''}`} />
+        <RefreshCwIcon className={`h-4 w-4 ${checking ? 'animate-spin' : ''}`} />
         <span>{checking ? 'Tekshirilmoqda...' : 'Qayta urinish'}</span>
       </button>
 
@@ -69,4 +108,3 @@ export default function OfflineScreen({ onRetry }) {
     </div>
   );
 }
-
