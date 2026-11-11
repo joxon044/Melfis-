@@ -76,7 +76,7 @@ export default function BouquetBuilder({ onAddToCart }) {
       id: `custom-${Date.now()}`,
       name: `Maxsus Guldasta: ${flowerDetails}`,
       price: totalPrice,
-      image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=800&q=80",
+      image: "/images/products/pink-gerbera-mix.jpg",
       isCustom: true,
       customConfig: {
         flowers: selectedFlowers.map(({ flower, count }) => ({ id: flower.id, count })),

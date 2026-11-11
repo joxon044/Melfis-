@@ -103,7 +103,7 @@ export default function HeroSection({ onExploreClick, onBuilderClick }) {
               {/* Main Card with Flower Image - 7. Ixcham balandlik, mahsulotlarni tezroq ko'rish uchun */}
               <div className="relative rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white group">
                 <img 
-                  src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=1000&q=85" 
+                  src="/images/products/pink-peonies.jpg" 
                   alt="Melfis Peonies Luxury Bouquet" 
                   className="w-full h-[280px] sm:h-[380px] lg:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
                 />
