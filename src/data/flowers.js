@@ -326,7 +326,7 @@ export const REVIEWS = [
     rating: 5,
     date: "Kecha, 21:30",
     comment: "Tungi soat 12 da onamning tug'ilgan kunlariga syurpriz qilib buyurtma berdim. 40 daqiqa ichida yetkazib berishdi! Gullar xuddi rasmdagidek juda yangi va xushbo'y ekan. Katta rahmat Melfis jamoasiga!",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+    avatar: "/images/avatars/avatar-female.jpg",
     bouquetName: "Melfis Royal Peony Dream",
   },
   {
@@ -336,7 +336,7 @@ export const REVIEWS = [
     rating: 5,
     date: "3 kun oldin",
     comment: "Ayolimga yubileyimizga 101 ta qizil atirgul oldim. Kuryer yetkazishdan oldin fotosuratini telegramdan tashlab berdi, xizmat ko'rsatish darajasi juda yuqori. Samarqandda bunday floristika darajasi kamdan-kam!",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    avatar: "/images/avatars/avatar-male.jpg",
     bouquetName: "101 Qizil Golland Atirguli",
   },
   {
@@ -346,7 +346,7 @@ export const REVIEWS = [
     rating: 5,
     date: "1 hafta oldin",
     comment: "Pavarot choraxasidagi do'koningizga o'zim kirib guldasta qildirdim. Qizlar juda xushmuomala, guldastani mehr bilan yasab berishdi. Narxlari ham sifatiga to'la munosib.",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    avatar: "/images/avatars/avatar-female.jpg",
     bouquetName: "Samarqand Bahori Miksi",
   },
 ];

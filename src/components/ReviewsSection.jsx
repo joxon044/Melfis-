@@ -9,11 +9,16 @@ export default function ReviewsSection() {
   const [newLocation, setNewLocation] = useState('Samarqand');
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(5);
+  const [gender, setGender] = useState('female');
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!newName.trim() || !newComment.trim()) return;
+
+    const avatarUrl = gender === 'male' 
+      ? "/images/avatars/avatar-male.jpg" 
+      : "/images/avatars/avatar-female.jpg";
 
     const newRev = {
       id: Date.now(),
@@ -22,7 +27,7 @@ export default function ReviewsSection() {
       rating: newRating,
       date: "Hozirgina",
       comment: newComment,
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+      avatar: avatarUrl,
       bouquetName: "Melfis Premium Kompozitsiya",
     };
 
@@ -192,6 +197,57 @@ export default function ReviewsSection() {
                       placeholder="Gullar sifati va yetkazib berish xizmati haqida yozing..."
                       className="w-full text-xs p-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                      Siz kimsiz?
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setGender('male')}
+                        className={`flex items-center gap-3 p-2.5 rounded-2xl border-2 transition-all cursor-pointer ${
+                          gender === 'male'
+                            ? 'border-[#1C3F3A] bg-emerald-50/70 ring-2 ring-[#1C3F3A]/20'
+                            : 'border-stone-200 bg-white hover:border-stone-300'
+                        }`}
+                      >
+                        <img
+                          src="/images/avatars/avatar-male.jpg"
+                          alt="O'g'il bola"
+                          className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
+                        />
+                        <div className="text-left min-w-0">
+                          <p className="text-xs font-bold text-stone-800 truncate">Yigit kishi</p>
+                          <span className={`text-[11px] font-medium ${gender === 'male' ? 'text-emerald-700 font-semibold' : 'text-stone-400'}`}>
+                            {gender === 'male' ? '✓ Tanlandi' : 'Tanlash'}
+                          </span>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setGender('female')}
+                        className={`flex items-center gap-3 p-2.5 rounded-2xl border-2 transition-all cursor-pointer ${
+                          gender === 'female'
+                            ? 'border-[#1C3F3A] bg-emerald-50/70 ring-2 ring-[#1C3F3A]/20'
+                            : 'border-stone-200 bg-white hover:border-stone-300'
+                        }`}
+                      >
+                        <img
+                          src="/images/avatars/avatar-female.jpg"
+                          alt="Qiz bola"
+                          className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
+                        />
+                        <div className="text-left min-w-0">
+                          <p className="text-xs font-bold text-stone-800 truncate">Qiz kishi</p>
+                          <span className={`text-[11px] font-medium ${gender === 'female' ? 'text-emerald-700 font-semibold' : 'text-stone-400'}`}>
+                            {gender === 'female' ? '✓ Tanlandi' : 'Tanlash'}
+                          </span>
+                        </div>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="pt-2 flex items-center justify-end gap-2">
