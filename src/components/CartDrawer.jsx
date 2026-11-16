@@ -47,6 +47,19 @@ export default function CartDrawer({
   const [paymentMethod, setPaymentMethod] = useState('Click');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+  const [yandexMapNotice, setYandexMapNotice] = useState('');
+
+  const handleOpenYandexMaps = () => {
+    const districtText = selectedDistrict?.name || "Pavarot choraxasi";
+    const fullQuery = address.trim()
+      ? `Samarqand, ${districtText}, ${address.trim()}`
+      : `Samarqand, ${districtText}`;
+
+    setYandexMapNotice(`Yetkazib berish manzili: ${fullQuery}`);
+
+    const yandexUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(fullQuery)}`;
+    window.open(yandexUrl, '_blank', 'noopener,noreferrer');
+  };
 
   // Subtotal & delivery calculations
   const itemsSubtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -283,6 +296,35 @@ export default function CartDrawer({
                     placeholder="Aniq manzil (Ko'cha, uy, mo'ljal yoki xonadon raqami)..."
                     className="w-full text-xs p-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-400"
                   />
+
+                  {/* Yandex Maps Integration */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={handleOpenYandexMaps}
+                      className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-200/90 text-amber-950 text-xs font-semibold shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-[#FC3F1D] text-white font-black flex items-center justify-center text-[11px] shadow-xs">
+                          Я
+                        </span>
+                        <span>Yandex Xaritada ko'rish</span>
+                      </div>
+                      <span className="text-[11px] text-amber-800 font-medium flex items-center gap-1">
+                        Xaritani ochish →
+                      </span>
+                    </button>
+
+                    {yandexMapNotice && (
+                      <div className="mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-[11px] leading-relaxed flex items-start gap-1.5 animate-fadeIn">
+                        <span className="shrink-0 text-sm">📍</span>
+                        <div>
+                          <strong>Yetkazish manzili:</strong> {address.trim() ? `${selectedDistrict.name}, ${address.trim()}` : selectedDistrict.name} (Samarqand)
+                          <div className="text-[10px] text-emerald-700 mt-0.5">Yandex Xarita ochildi va manzil ko'rsatildi!</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Surprise Order Toggle */}
