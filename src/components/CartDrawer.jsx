@@ -31,6 +31,8 @@ export default function CartDrawer({
   currentUser,
   onRequireAuth,
   onCreateOrder,
+  onDeductBalance,
+  onOpenAccount,
 }) {
   // Checkout form state
   const [customerName, setCustomerName] = useState('');
@@ -44,7 +46,7 @@ export default function CartDrawer({
   const [recipientPhone, setRecipientPhone] = useState('+998 ');
   const [cardMessage, setCardMessage] = useState('');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('Click');
+  const [paymentMethod, setPaymentMethod] = useState('Melfis Balansi');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -75,6 +77,14 @@ export default function CartDrawer({
     if (!resolvedName || !resolvedPhone || resolvedPhone.trim().length < 7) {
       setFormError("Iltimos, ismingiz va telefon raqamingizni kiriting!");
       return;
+    }
+
+    if (paymentMethod === 'Melfis Balansi') {
+      const userBal = currentUser?.balance || 0;
+      if (userBal < grandTotal) {
+        setFormError(`Balansingizda yetarli mablag' yo'q (${formatPrice(userBal)}). Kerakli summa: ${formatPrice(grandTotal)}. Iltimos, hisobingizni to'ldiring.`);
+        return;
+      }
     }
 
     setFormError('');
@@ -112,6 +122,10 @@ export default function CartDrawer({
         } else {
           window.open(url, '_blank');
         }
+      }
+
+      if (paymentMethod === 'Melfis Balansi' && onDeductBalance) {
+        onDeductBalance(grandTotal);
       }
 
       triggerConfetti();
@@ -366,26 +380,67 @@ export default function CartDrawer({
                 </div>
 
                 {/* Payment Method */}
-                <div className="p-4 rounded-2xl bg-white border border-stone-200 space-y-2">
+                <div className="p-4 rounded-2xl bg-white border border-stone-200 space-y-2.5">
                   <span className="text-xs font-bold text-stone-800 block">
                     To'lov turi:
                   </span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['Click', 'Payme', 'Naqd / Karta'].map((method) => (
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'Melfis Balansi', label: '💰 Melfis Balansi' },
+                      { id: 'Click', label: 'Click' },
+                      { id: 'Payme', label: 'Payme' },
+                      { id: 'Naqd / Karta', label: 'Naqd / Karta' },
+                    ].map(({ id, label }) => (
                       <button
-                        key={method}
+                        key={id}
                         type="button"
-                        onClick={() => setPaymentMethod(method)}
-                        className={`py-2 rounded-xl text-xs font-semibold border transition-all ${
-                          paymentMethod === method
-                            ? 'bg-[#1C3F3A] text-white border-[#1C3F3A]'
+                        onClick={() => setPaymentMethod(id)}
+                        className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all text-center ${
+                          paymentMethod === id
+                            ? 'bg-[#1C3F3A] text-white border-[#1C3F3A] shadow-xs'
                             : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
                         }`}
                       >
-                        {method}
+                        {label}
                       </button>
                     ))}
                   </div>
+
+                  {/* Balance Status Banner */}
+                  {paymentMethod === 'Melfis Balansi' && (
+                    <div className={`mt-2 p-3 rounded-xl border text-xs space-y-1.5 transition-all ${
+                      (currentUser?.balance || 0) >= grandTotal
+                        ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
+                        : 'bg-rose-50 border-rose-300 text-rose-950'
+                    }`}>
+                      <div className="flex items-center justify-between font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <span>💰</span> Hisob balansingiz:
+                        </span>
+                        <span>{formatPrice(currentUser?.balance || 0)}</span>
+                      </div>
+                      {(currentUser?.balance || 0) >= grandTotal ? (
+                        <div className="text-[11px] text-emerald-700 flex items-center gap-1">
+                          <span>✓</span> Mablag‘ yetarli. Buyurtma berilganda balansingizdan {formatPrice(grandTotal)} yechiladi. Qoladi: {formatPrice((currentUser?.balance || 0) - grandTotal)}.
+                        </div>
+                      ) : (
+                        <div className="space-y-2 pt-1">
+                          <div className="text-[11px] text-rose-700 font-medium">
+                            ⚠️ Balansingizda yetarli mablag‘ yo‘q (Yetishmayotgan summa: {formatPrice(grandTotal - (currentUser?.balance || 0))}).
+                          </div>
+                          {onOpenAccount && (
+                            <button
+                              type="button"
+                              onClick={onOpenAccount}
+                              className="w-full py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors shadow-xs"
+                            >
+                              + Profilga o‘tib balansni to‘ldirish
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {formError && (

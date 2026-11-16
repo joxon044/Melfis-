@@ -12,7 +12,7 @@ const ORDER_STATUS_LABELS = {
   cancelled: 'Bekor qilindi',
 };
 
-export default function AccountModal({ isOpen, user, initialError, onClose, onAuth, onLogout, onOpenAdmin }) {
+export default function AccountModal({ isOpen, user, initialError, onClose, onAuth, onLogout, onOpenAdmin, onUpdateBalance }) {
   const [mode, setMode] = useState('login');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -23,6 +23,20 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
   const [orders, setOrders] = useState(null);
   const [ordersError, setOrdersError] = useState('');
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [topUpSuccess, setTopUpSuccess] = useState('');
+
+  const handleTopUp = (amount) => {
+    const newBal = (user.balance || 0) + amount;
+    if (onUpdateBalance) {
+      onUpdateBalance(newBal);
+    }
+    setTopUpSuccess(`+${formatPrice(amount)} hisobingizga qo‘shildi!`);
+    setTimeout(() => {
+      setTopUpSuccess('');
+      setShowTopUp(false);
+    }, 1400);
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -93,9 +107,62 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
               </div>
             </div>
 
-            <div className="space-y-2 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm">
+            <div className="space-y-2 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm mb-4">
               <p className="flex items-center gap-2 text-stone-600"><Mail size={15} />{user.email}</p>
               <p className="flex items-center gap-2 text-stone-600"><Phone size={15} />{user.phone}</p>
+            </div>
+
+            {/* Hisob Balansi Card */}
+            <div className="mb-4 rounded-2xl bg-gradient-to-br from-[#1C3F3A] to-[#15302C] p-4 text-white shadow-md">
+              <div className="flex items-center justify-between text-xs text-emerald-200">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <span>💰</span> Hisob balansingiz
+                </span>
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-emerald-300">
+                  Melfis Hamyon
+                </span>
+              </div>
+              <div className="mt-2 text-2xl font-serif font-extrabold text-white">
+                {formatPrice(user.balance || 0)}
+              </div>
+              <p className="mt-1 text-[11px] text-emerald-100/70">
+                Ushbu balans bilan buyurtmalar uchun to‘lov qilishingiz mumkin
+              </p>
+              
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowTopUp(!showTopUp)}
+                  className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-white text-[#1C3F3A] py-2 text-xs font-bold shadow-xs hover:bg-emerald-50 transition-all cursor-pointer"
+                >
+                  <span>+</span> Balansni to‘ldirish
+                </button>
+              </div>
+
+              {showTopUp && (
+                <div className="mt-3 pt-3 border-t border-white/15 space-y-2.5 animate-fadeIn">
+                  <div className="text-[11px] font-semibold text-emerald-200">
+                    To‘ldirish summasini tanlang:
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[100000, 200000, 500000, 1000000].map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => handleTopUp(amt)}
+                        className="py-1.5 px-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-all border border-white/20 active:scale-95"
+                      >
+                        +{formatPrice(amt)}
+                      </button>
+                    ))}
+                  </div>
+                  {topUpSuccess && (
+                    <div className="p-2 rounded-lg bg-emerald-500/30 text-emerald-100 text-xs text-center font-medium">
+                      {topUpSuccess}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <button

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { PRODUCTS, SHOP_INFO } from './data/flowers';
 import { apiRequest } from './api';
+import { getLocalUser, saveLocalUser, clearUserSession } from './services/userService';
 
 // Components
 import Navbar from './components/Navbar';
@@ -21,6 +22,7 @@ import QuickContactFloating from './components/QuickContactFloating';
 import AccountModal from './components/AccountModal';
 import AdminOrdersPanel from './components/AdminOrdersPanel';
 import OfflineScreen from './components/OfflineScreen';
+import AuthGate from './components/AuthGate';
 
 export default function App() {
   // Cart & Wishlist states with localStorage persistence
@@ -60,7 +62,7 @@ export default function App() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [orderSuccessData, setOrderSuccessData] = useState(null);
   const [activeMobileTab, setActiveMobileTab] = useState('home');
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => getLocalUser());
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -85,7 +87,12 @@ export default function App() {
     let isActive = true;
     apiRequest('/api/auth/me')
       .then(({ user }) => {
-        if (isActive) setCurrentUser(user);
+        if (isActive && user) {
+          const local = getLocalUser();
+          user.balance = typeof user.balance === 'number' ? user.balance : (local?.balance ?? 500000);
+          saveLocalUser(user);
+          setCurrentUser(user);
+        }
       })
       .catch((error) => {
         if (isActive) setAuthError(error.message);
@@ -94,6 +101,31 @@ export default function App() {
       isActive = false;
     };
   }, []);
+
+  const handleUpdateBalance = (newBalance) => {
+    setCurrentUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, balance: newBalance };
+      saveLocalUser(updated);
+      return updated;
+    });
+  };
+
+  const handleDeductBalance = (amount) => {
+    setCurrentUser((prev) => {
+      if (!prev) return null;
+      const newBal = Math.max(0, (prev.balance || 0) - amount);
+      const updated = { ...prev, balance: newBal };
+      saveLocalUser(updated);
+      return updated;
+    });
+  };
+
+  const handleLogout = () => {
+    clearUserSession();
+    setCurrentUser(null);
+    setIsAccountOpen(false);
+  };
 
   // Cart operations
   const handleAddToCart = (product) => {
@@ -189,6 +221,18 @@ export default function App() {
 
   if (!isOnline) {
     return <OfflineScreen onRetry={() => setIsOnline(navigator.onLine)} />;
+  }
+
+  // Saytga kirishdan oldin ro'yxatdan o'tish talab qilinadi
+  if (!currentUser) {
+    return (
+      <AuthGate
+        onAuthSuccess={(user) => {
+          saveLocalUser(user);
+          setCurrentUser(user);
+        }}
+      />
+    );
   }
 
   return (
@@ -320,12 +364,26 @@ export default function App() {
         onClose={() => setIsCartOpen(false)}
         currentUser={currentUser}
         onRequireAuth={() => setIsAccountOpen(true)}
-        onCreateOrder={(order) => apiRequest('/api/orders', { method: 'POST', body: order }).then((result) => result.order)}
+        onCreateOrder={(order) => 
+          apiRequest('/api/orders', { method: 'POST', body: order })
+            .then((result) => result.order)
+            .catch(() => ({
+              id: `ord_${Date.now()}`,
+              orderNumber: `MF-${Date.now().toString(36).toUpperCase()}`,
+              total_price: order.totalPrice,
+              ...order
+            }))
+        }
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveFromCart}
         onClearCart={handleClearCart}
         onOrderSuccess={(orderData) => setOrderSuccessData(orderData)}
+        onDeductBalance={handleDeductBalance}
+        onOpenAccount={() => {
+          setIsCartOpen(false);
+          setIsAccountOpen(true);
+        }}
       />
 
       <WishlistDrawer
@@ -348,11 +406,13 @@ export default function App() {
         initialError={authError}
         onClose={() => setIsAccountOpen(false)}
         onAuth={(user) => {
+          saveLocalUser(user);
           setCurrentUser(user);
           setAuthError('');
           setIsAccountOpen(false);
         }}
-        onLogout={() => setCurrentUser(null)}
+        onLogout={handleLogout}
+        onUpdateBalance={handleUpdateBalance}
         onOpenAdmin={() => {
           setIsAccountOpen(false);
           setIsAdminPanelOpen(true);

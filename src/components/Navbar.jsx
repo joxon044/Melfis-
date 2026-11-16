@@ -191,6 +191,19 @@ export default function Navbar({
                 )}
               </button>
 
+              {/* User Balance Badge */}
+              {user && (
+                <button
+                  type="button"
+                  onClick={onOpenAccount}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/90 text-emerald-900 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                  title="Hisob balansingizni ko‘rish va to‘ldirish"
+                >
+                  <span className="text-xs">💰</span>
+                  <span className="truncate max-w-[90px] sm:max-w-none">{formatPrice(user.balance || 0)}</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={onOpenAccount}
