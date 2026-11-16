@@ -362,8 +362,8 @@ export default function App() {
         <AdminOrdersPanel onClose={() => setIsAdminPanelOpen(false)} />
       )}
 
-      {/* Floating 24/7 Action Button */}
-      <QuickContactFloating />
+      {/* Floating 24/7 AI Florist Chat & Action Button */}
+      <QuickContactFloating onSelectProduct={setSelectedProduct} />
 
       {/* Mobile App Bottom Navigation Bar */}
       <MobileBottomNav
