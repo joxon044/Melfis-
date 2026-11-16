@@ -219,7 +219,7 @@ export default function ReviewsSection() {
                           className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
                         />
                         <div className="text-left min-w-0">
-                          <p className="text-xs font-bold text-stone-800 truncate">Yigit kishi</p>
+                          <p className="text-xs font-bold text-stone-800 truncate">O'g'il bola</p>
                           <span className={`text-[11px] font-medium ${gender === 'male' ? 'text-emerald-700 font-semibold' : 'text-stone-400'}`}>
                             {gender === 'male' ? '✓ Tanlandi' : 'Tanlash'}
                           </span>
@@ -241,7 +241,7 @@ export default function ReviewsSection() {
                           className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
                         />
                         <div className="text-left min-w-0">
-                          <p className="text-xs font-bold text-stone-800 truncate">Qiz kishi</p>
+                          <p className="text-xs font-bold text-stone-800 truncate">Qiz bola</p>
                           <span className={`text-[11px] font-medium ${gender === 'female' ? 'text-emerald-700 font-semibold' : 'text-stone-400'}`}>
                             {gender === 'female' ? '✓ Tanlandi' : 'Tanlash'}
                           </span>
