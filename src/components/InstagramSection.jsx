@@ -117,7 +117,7 @@ export default function InstagramSection() {
                 <p>📞 +998 70 039 07 19</p>
                 <div className="pt-1 flex items-center justify-center sm:justify-start gap-3 text-sky-600 font-medium">
                   <a href={SHOP_INFO.telegramUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
-                    <Send size={12} /> t.me/Melfis_flowers
+                    <Send size={12} /> t.me/{SHOP_INFO.telegramUsername}
                   </a>
                 </div>
               </div>

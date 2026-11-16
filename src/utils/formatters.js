@@ -74,5 +74,5 @@ export function generateTelegramOrderUrl(orderDetails) {
   text += `✨ Samarqand Pavarot choraxasi | Tel: +998 70 039 07 19`;
 
   const encoded = encodeURIComponent(text);
-  return `https://t.me/Melfis_flowers?text=${encoded}`;
+  return `https://t.me/melfisflower_bot?text=${encoded}`;
 }
