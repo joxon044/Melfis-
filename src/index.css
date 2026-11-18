@@ -31,6 +31,25 @@
   background: #B99C90;
 }
 
+/* Modal clean scrollbar */
+.modal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d6d3d1 transparent;
+}
+.modal-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.modal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 9999px;
+}
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a29e;
+}
+
 /* Glassmorphism effects */
 .glass-panel {
   background: rgba(255, 255, 255, 0.85);
