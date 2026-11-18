@@ -14,6 +14,7 @@ import {
   UserRound
 } from 'lucide-react';
 import { SHOP_INFO } from '../data/flowers';
+import { formatPrice } from '../utils/formatters';
 
 export default function Navbar({
   cartCount,

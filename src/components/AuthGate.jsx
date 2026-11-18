@@ -129,14 +129,14 @@ export default function AuthGate({ onAuthSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#FAF7F2] p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#FAF7F2] p-4 flex min-h-full items-center justify-center">
       {/* Background Floral Accents */}
-      <div className="absolute top-0 left-0 w-72 h-72 rounded-full bg-rose-100/40 blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-emerald-100/40 blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3"></div>
+      <div className="fixed top-0 left-0 w-72 h-72 rounded-full bg-rose-100/40 blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="fixed bottom-0 right-0 w-80 h-80 rounded-full bg-emerald-100/40 blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3"></div>
 
       {/* Simulated Real SMS Toast Notification (Header Pop-up) */}
       {showSmsBanner && step === 'verify' && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[110] w-[92vw] max-w-sm bg-stone-900/95 text-white p-3.5 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 animate-in slide-in-from-top-4 duration-300">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[110] w-[92vw] max-w-sm bg-stone-900/95 text-white p-3.5 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20">
           <div className="flex items-start justify-between gap-2.5">
             <div className="flex items-start gap-2.5">
               <span className="text-xl">📩</span>
@@ -164,7 +164,7 @@ export default function AuthGate({ onAuthSuccess }) {
         </div>
       )}
 
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-6 sm:p-8 my-auto animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-6 sm:p-8 my-6">
         
         {/* Logo & Header */}
         <div className="text-center mb-6">
