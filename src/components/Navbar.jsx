@@ -89,16 +89,16 @@ export default function Navbar({
       {/* Main Navbar */}
       <nav className={`w-full transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-md py-2.5' 
-          : 'bg-[#FAF7F2]/95 backdrop-blur-sm border-b border-stone-200/60 py-3.5'
+          ? 'bg-white/95 backdrop-blur-md shadow-md py-3' 
+          : 'bg-[#FAF7F2]/95 backdrop-blur-sm border-b border-stone-200/60 py-4'
       }`}>
-        <div className="max-w-7xl mx-auto pl-3 pr-5 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4 lg:gap-8">
             
             {/* Logo */}
             <div 
               onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="flex items-center gap-3 cursor-pointer select-none group"
+              className="flex items-center gap-3 cursor-pointer select-none group shrink-0"
             >
               <img 
                 src="/images/navbar-logo.png" 
@@ -110,54 +110,54 @@ export default function Navbar({
               />
             </div>
 
-            {/* Desktop Navigation Links */}
-            <div className="hidden 2xl:flex items-center space-x-7">
+            {/* Desktop Navigation Links — erkin, bir qatorda, tiqilinchsiz */}
+            <div className="hidden xl:flex items-center gap-6 2xl:gap-8 shrink-0 whitespace-nowrap">
               <button 
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors"
+                className="whitespace-nowrap shrink-0 text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors py-1 cursor-pointer"
               >
                 Bosh sahifa
               </button>
               <button 
                 onClick={() => scrollTo('catalog')}
-                className="text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors"
+                className="whitespace-nowrap shrink-0 text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors py-1 cursor-pointer"
               >
                 Gullar katalogi
               </button>
               <button 
                 onClick={() => scrollTo('builder')}
-                className="flex items-center gap-1.5 text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-full border border-rose-200"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 text-rose-700 hover:text-rose-800 font-medium text-sm transition-all bg-rose-50 hover:bg-rose-100 px-3.5 py-1.5 rounded-full border border-rose-200/90 shadow-2xs cursor-pointer active:scale-95"
               >
                 <Sparkles size={14} className="text-rose-500" />
-                O'z guldastangiz
+                <span>O'z guldastangiz</span>
               </button>
               <button 
                 onClick={() => scrollTo('reviews')}
-                className="text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors"
+                className="whitespace-nowrap shrink-0 text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors py-1 cursor-pointer"
               >
                 Mijozlar fikrlari
               </button>
               <button 
                 onClick={() => scrollTo('contact')}
-                className="text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors"
+                className="whitespace-nowrap shrink-0 text-stone-700 hover:text-rose-600 font-medium text-sm transition-colors py-1 cursor-pointer"
               >
                 Do'kon manzili
               </button>
             </div>
 
-            {/* Actions: Search, Wishlist, Cart */}
-            <div className="flex items-center space-x-1 sm:space-x-3">
+            {/* Actions: Search, Wishlist, Cart, User */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {/* Search input on desktop */}
-              <form onSubmit={handleSearchSubmit} className="hidden 2xl:flex items-center relative">
+              <form onSubmit={handleSearchSubmit} className="hidden xl:flex items-center relative">
                 <input
                   type="text"
                   placeholder="Gullarni qidirish..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   aria-label="Gullarni qidirish"
-                  className="w-44 lg:w-56 pl-9 pr-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all"
+                  className="w-36 lg:w-44 2xl:w-56 pl-9 pr-3 py-1.5 text-xs sm:text-sm rounded-full bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all"
                 />
-                <Search size={16} className="absolute left-3 text-stone-400" />
+                <Search size={15} className="absolute left-3 text-stone-400" />
                 {searchQuery && (
                   <button 
                     type="button"
@@ -172,7 +172,7 @@ export default function Navbar({
               {/* Mobile Search Toggle */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="2xl:hidden p-1.5 text-stone-700 hover:text-rose-600 rounded-full hover:bg-stone-100 transition-colors"
+                className="xl:hidden p-2 text-stone-700 hover:text-rose-600 rounded-full hover:bg-stone-100 transition-colors"
                 aria-label="Qidiruv"
               >
                 <Search size={20} />
