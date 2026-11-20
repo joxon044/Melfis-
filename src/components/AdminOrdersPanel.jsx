@@ -43,9 +43,13 @@ async function fetchOrders() {
 
 export default function AdminOrdersPanel({ onClose }) {
   const [orders, setOrders] = useState([]);
+  const [topups, setTopups] = useState([]);
   const [error, setError] = useState('');
+  const [topupsError, setTopupsError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingTopups, setIsLoadingTopups] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [updatingTopupId, setUpdatingTopupId] = useState(null);
 
   const loadOrders = useCallback(async () => {
     setError('');
@@ -56,6 +60,19 @@ export default function AdminOrdersPanel({ onClose }) {
       setError(requestError.message);
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const loadTopups = useCallback(async () => {
+    setTopupsError('');
+    setIsLoadingTopups(true);
+    try {
+      const result = await apiRequest('/api/admin/topups');
+      setTopups(result.topups);
+    } catch (requestError) {
+      setTopupsError(requestError.message);
+    } finally {
+      setIsLoadingTopups(false);
     }
   }, []);
 
@@ -71,10 +88,39 @@ export default function AdminOrdersPanel({ onClose }) {
       .finally(() => {
         if (isActive) setIsLoading(false);
       });
+    apiRequest('/api/admin/topups')
+      .then(({ topups: result }) => {
+        if (isActive) setTopups(result);
+      })
+      .catch((requestError) => {
+        if (isActive) setTopupsError(requestError.message);
+      })
+      .finally(() => {
+        if (isActive) setIsLoadingTopups(false);
+      });
     return () => {
       isActive = false;
     };
   }, []);
+
+  const updateTopup = async (topup, status) => {
+    if (status === 'approved' && !window.confirm(`To‘lov ${formatPrice(Number(topup.amount))} kelib tushganini tekshirdingizmi? Tasdiqlangach summa balansga qo‘shiladi.`)) return;
+    if (status === 'rejected' && !window.confirm('Ushbu balans to‘ldirish so‘rovini rad etasizmi?')) return;
+
+    setUpdatingTopupId(topup.id);
+    setTopupsError('');
+    try {
+      const result = await apiRequest(`/api/admin/topups/${encodeURIComponent(topup.id)}`, {
+        method: 'PATCH',
+        body: { status },
+      });
+      setTopups((current) => current.map((item) => item.id === topup.id ? { ...item, ...result.topup } : item));
+    } catch (requestError) {
+      setTopupsError(requestError.message);
+    } finally {
+      setUpdatingTopupId(null);
+    }
+  };
 
   const updateStatus = async (order, status) => {
     setUpdatingId(order.id);
@@ -107,7 +153,7 @@ export default function AdminOrdersPanel({ onClose }) {
             <p className="text-xs text-stone-500">{orders.length} ta buyurtma</p>
           </div>
         </div>
-        <button type="button" onClick={loadOrders} disabled={isLoading} className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50">
+        <button type="button" onClick={() => { loadOrders(); loadTopups(); }} disabled={isLoading || isLoadingTopups} className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50">
           <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
           Yangilash
         </button>
@@ -115,6 +161,55 @@ export default function AdminOrdersPanel({ onClose }) {
 
       <main className="mx-auto max-w-5xl space-y-4 p-4 sm:p-8">
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+        <section className="space-y-3 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="font-serif text-lg font-bold text-stone-900">Balans to‘ldirish so‘rovlari</h2>
+              <p className="text-xs text-stone-500">{topups.filter((topup) => topup.status === 'pending').length} ta kutilmoqda</p>
+            </div>
+          </div>
+          {topupsError && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{topupsError}</p>}
+          {isLoadingTopups && <p className="py-4 text-center text-sm text-stone-500">So‘rovlar yuklanmoqda...</p>}
+          {!isLoadingTopups && !topupsError && topups.length === 0 && (
+            <p className="py-4 text-center text-sm text-stone-500">Balans to‘ldirish so‘rovlari yo‘q.</p>
+          )}
+          {topups.map((topup) => (
+            <article key={topup.id} className="flex flex-col justify-between gap-3 rounded-xl border border-stone-200 p-3 sm:flex-row sm:items-center">
+              <div className="min-w-0 text-xs">
+                <p className="font-bold text-stone-900">{topup.user_name} · {topup.user_phone}</p>
+                <p className="text-stone-500">{topup.user_email}</p>
+                <p className="mt-1 text-stone-500">{new Date(topup.created_at).toLocaleString('uz-UZ')} · {topup.id}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-1 font-bold text-emerald-900">{formatPrice(Number(topup.amount))}</span>
+                {topup.status === 'pending' ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => updateTopup(topup, 'approved')}
+                      disabled={updatingTopupId === topup.id}
+                      className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-800 disabled:opacity-50"
+                    >
+                      {updatingTopupId === topup.id ? 'Kuting...' : 'To‘lovni tasdiqlash'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateTopup(topup, 'rejected')}
+                      disabled={updatingTopupId === topup.id}
+                      className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      Rad etish
+                    </button>
+                  </>
+                ) : (
+                  <span className={`text-xs font-semibold ${topup.status === 'approved' ? 'text-emerald-700' : 'text-red-600'}`}>
+                    {topup.status === 'approved' ? 'Tasdiqlangan' : 'Rad etilgan'}
+                  </span>
+                )}
+              </div>
+            </article>
+          ))}
+        </section>
         {isLoading && <p className="py-12 text-center text-sm text-stone-500">Buyurtmalar yuklanmoqda...</p>}
         {!isLoading && !error && orders.length === 0 && (
           <p className="rounded-2xl bg-white p-8 text-center text-sm text-stone-500">Hozircha buyurtmalar yo‘q.</p>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { registerUser, loginUser } from '../services/userService';
 
-export default function AuthGate({ onAuthSuccess }) {
+export default function AuthGate({ onAuthSuccess, initialError }) {
   const [mode, setMode] = useState('register'); // 'register' | 'login'
   const [step, setStep] = useState('form'); // 'form' | 'verify'
   
@@ -212,16 +212,6 @@ export default function AuthGate({ onAuthSuccess }) {
               </button>
             </div>
 
-            {/* Initial Bonus Announcement (for register) */}
-            {mode === 'register' && (
-              <div className="mb-4 p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-rose-50 border border-amber-200/80 flex items-center gap-2.5">
-                <span className="text-xl">🎁</span>
-                <div className="text-[11px] text-amber-950 leading-snug">
-                  <strong>500 000 so‘m sovg‘a balansi!</strong> Ro‘yxatdan o‘tganingizda profilingizga start balansi beriladi. Gullarni shu balans hisobidan sotib olishingiz mumkin.
-                </div>
-              </div>
-            )}
-
             {/* Form */}
             <form onSubmit={handleFormSubmit} className="space-y-3.5">
               {mode === 'register' && (
@@ -284,9 +274,9 @@ export default function AuthGate({ onAuthSuccess }) {
                 />
               </div>
 
-              {error && (
+              {(error || initialError) && (
                 <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
-                  {error}
+                  {error || initialError}
                 </div>
               )}
 

@@ -37,9 +37,24 @@ export default async function orders(req, res) {
     const orderNumber = `MF-${Date.now().toString(36).toUpperCase()}-${randomBytes(2).toString('hex').toUpperCase()}`;
     const pool = getPool();
     const client = await pool.connect();
+    let remainingBalance = Number(user.balance) || 0;
 
     try {
       await client.query('BEGIN');
+      if (order.paymentMethod === 'Melfis Balansi') {
+        const balanceResult = await client.query(
+          `UPDATE users
+              SET balance = balance - $1
+            WHERE id = $2 AND balance >= $1
+            RETURNING balance`,
+          [order.totalPrice, user.id]
+        );
+        if (!balanceResult.rowCount) {
+          throw Object.assign(new Error('Balansda buyurtma uchun yetarli mablag‘ yo‘q.'), { statusCode: 400 });
+        }
+        remainingBalance = Number(balanceResult.rows[0].balance);
+      }
+
       await client.query(
         `INSERT INTO orders (
           id, order_number, user_id, customer_name, phone, district, address,
@@ -104,6 +119,7 @@ export default async function orders(req, res) {
         cardMessage: order.cardMessage,
         notes: order.notes,
         paymentMethod: order.paymentMethod,
+        balance: remainingBalance,
         status: 'new',
         createdAt: new Date().toISOString(),
       },

@@ -1,5 +1,5 @@
 import { createSession, normalizeEmail, publicUser, verifyPassword } from '../../server/auth.js';
-import { getPool } from '../../server/db.js';
+import { getPool, ensureDbInitialized } from '../../server/db.js';
 import { handleApiError, handleCapacitorCors, methodNotAllowed, requireBody, requireSameOrigin, sendJson } from '../../server/http.js';
 
 export default async function login(req, res) {
@@ -14,8 +14,9 @@ export default async function login(req, res) {
       return sendJson(res, 400, { error: 'Email va parolni kiriting.' });
     }
 
+    await ensureDbInitialized();
     const result = await getPool().query(
-      'SELECT id, email, name, phone, role, password_hash FROM users WHERE email = $1',
+      'SELECT id, email, name, phone, role, balance, password_hash FROM users WHERE email = $1',
       [email]
     );
     const user = result.rows[0];

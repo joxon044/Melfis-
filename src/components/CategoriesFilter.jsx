@@ -39,7 +39,7 @@ export default function CategoriesFilter({
     <div className="space-y-6">
       
       {/* Category Pills (Horizontal scroll on mobile) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 pr-4 scrollbar-none no-scrollbar -mx-4 pl-4 sm:mx-0 sm:pl-0 sm:pr-4 [&::-webkit-scrollbar]:hidden">
         {CATEGORIES.map((cat) => {
           const Icon = iconMap[cat.icon] || Sparkles;
           const isActive = selectedCategory === cat.id;

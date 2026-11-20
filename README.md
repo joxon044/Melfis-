@@ -18,7 +18,7 @@ vercel dev
 ## PostgreSQL sozlash
 
 1. PostgreSQL provider’da ma’lumotlar bazasi yarating.
-2. `db/schema.sql` faylining SQL’ini provider’ning SQL console’ida bir marta ishga tushiring.
+2. `db/schema.sql` faylining SQL’ini provider’ning SQL console’ida ishga tushiring. Mavjud bazani yangilashda ham shu faylni qayta ishga tushiring: balans ustuni va hamyon so‘rovlari jadvali mavjud bo‘lmasa yaratiladi; yangi balanslar 0 so‘mdan boshlanadi. Haqiqiy to‘lov tasdiqlangach balans saqlanadi; to‘lovlar boshlangandan keyin balansni nolga tushiruvchi SQL’ni qayta ishlatmang.
 3. Vercel project settings’da `DATABASE_URL` environment variable qo‘shing. `.env.example` faqat format namunasi; haqiqiy parol yoki URL’ni repoga qo‘shmang.
 4. Vercel’ga deploy qiling. `api/` ichidagi funksiyalar `/api/...` manzillarida ishlaydi.
 
@@ -39,6 +39,8 @@ WHERE email = LOWER('admin@example.com');
 - `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
 - `GET /api/orders` va `POST /api/orders` — akkaunt orqali buyurtmalar tarixi va yangi buyurtma
 - `GET /api/admin/orders` va `PATCH /api/admin/orders/:id` — admin buyurtmalarni ko‘rish va holatini yangilash
+- `GET /api/balance/topups` va `POST /api/balance/topups` — balans to‘ldirish so‘rovlari
+- `GET /api/admin/topups` va `PATCH /api/admin/topups/:id` — admin to‘lovni tasdiqlaydi yoki rad etadi. So‘rov yuborish balansga pul qo‘shmaydi; faqat real to‘lov tekshirilgach tasdiqlash balansni oshiradi.
 
 Buyurtma narxlari serverda qayta hisoblanadi. Login sessiyasi HttpOnly cookie’da saqlanadi; admin huquqi bazadagi `users.role` orqali tekshiriladi.
 

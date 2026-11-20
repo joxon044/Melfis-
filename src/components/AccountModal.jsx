@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { KeyRound, LogOut, Mail, PackageCheck, Phone, Send, ShieldCheck, User, X } from 'lucide-react';
+import { KeyRound, LogOut, Mail, PackageCheck, Phone, RefreshCw, Send, ShieldCheck, X } from 'lucide-react';
 import { apiRequest } from '../api';
 import { formatPrice } from '../utils/formatters';
 import { SHOP_INFO } from '../data/flowers';
+
+const TOP_UP_STATUS_LABELS = {
+  pending: 'To‘lov tasdiqlanishi kutilmoqda',
+  approved: 'Balansga qo‘shildi',
+  rejected: 'Rad etildi',
+};
 
 const ORDER_STATUS_LABELS = {
   new: 'Yangi',
@@ -13,7 +19,7 @@ const ORDER_STATUS_LABELS = {
   cancelled: 'Bekor qilindi',
 };
 
-export default function AccountModal({ isOpen, user, initialError, onClose, onAuth, onLogout, onOpenAdmin, onUpdateBalance }) {
+export default function AccountModal({ isOpen, user, initialError, onClose, onAuth, onLogout, onOpenAdmin, onBalanceUpdate }) {
   const [mode, setMode] = useState('login');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -25,7 +31,12 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
   const [ordersError, setOrdersError] = useState('');
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [showTopUp, setShowTopUp] = useState(false);
-  const [topUpSuccess, setTopUpSuccess] = useState('');
+  const [topups, setTopups] = useState([]);
+  const [topupsError, setTopupsError] = useState('');
+  const [isLoadingTopups, setIsLoadingTopups] = useState(true);
+  const [submittingTopupAmount, setSubmittingTopupAmount] = useState(null);
+  const [topupTelegramUrl, setTopupTelegramUrl] = useState('');
+  const [balanceError, setBalanceError] = useState('');
 
   // Lock background body scrolling when modal is open
   useEffect(() => {
@@ -38,29 +49,59 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
     }
   }, [isOpen]);
 
-  const handleTopUp = (amount) => {
-    const newBal = (user?.balance || 0) + amount;
-    if (onUpdateBalance) {
-      onUpdateBalance(newBal);
+  useEffect(() => {
+    if (!isOpen || !user) return undefined;
+    let isActive = true;
+    setTopupsError('');
+    apiRequest('/api/balance/topups')
+      .then(({ topups: userTopups }) => {
+        if (isActive) setTopups(userTopups);
+      })
+      .catch((requestError) => {
+        if (isActive) setTopupsError(requestError.message);
+      })
+      .finally(() => {
+        if (isActive) setIsLoadingTopups(false);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, [isOpen, user]);
+
+  const handleRequestTopUp = async (amount) => {
+    setSubmittingTopupAmount(amount);
+    setTopupsError('');
+    setTopupTelegramUrl('');
+    try {
+      const { topup } = await apiRequest('/api/balance/topups', {
+        method: 'POST',
+        body: { amount },
+      });
+      setTopups((current) => [topup, ...current.filter((item) => item.id !== topup.id)]);
+      const text = encodeURIComponent(
+        `Assalomu alaykum! Melfis hisobimni to'ldirish uchun to'lov qilmoqchiman.\n` +
+        `So'rov raqami: ${topup.id}\n` +
+        `Mijoz: ${user.name}\nTelefon: ${user.phone}\n` +
+        `Summa: ${formatPrice(amount)}\n\n` +
+        `To'lovni tasdiqlash uchun chekni yuboryapman.`
+      );
+      setTopupTelegramUrl(`https://t.me/${SHOP_INFO.telegramUsername}?text=${text}`);
+    } catch (requestError) {
+      setTopupsError(requestError.message);
+    } finally {
+      setSubmittingTopupAmount(null);
     }
-    setTopUpSuccess(`+${formatPrice(amount)} hisobingizga qo‘shildi!`);
-    setTimeout(() => {
-      setTopUpSuccess('');
-      setShowTopUp(false);
-    }, 1400);
   };
 
-  const handleTelegramTopUp = (amount = null) => {
-    const sumLine = amount ? `\n💵 To'ldirmoqchi bo'lgan summa: ${formatPrice(amount)}` : '';
-    const text = encodeURIComponent(
-      `Assalomu alaykum! Melfis Flower hisobimni to'ldirmoqchiman 🌸\n` +
-      `👤 Mijoz: ${user?.name || 'Mijoz'}\n` +
-      `📞 Telefon: ${user?.phone || ''}\n` +
-      `💰 Joriy balans: ${formatPrice(user?.balance || 0)}` +
-      sumLine +
-      `\n\nIltimos, hisobimni to'ldirish uchun to'lov ma'lumotlarini (Click / Payme) yuborsangiz.`
-    );
-    window.open(`https://t.me/${SHOP_INFO.telegramUsername}?text=${text}`, '_blank');
+  const handleRefreshBalance = async () => {
+    setBalanceError('');
+    try {
+      const { user: refreshedUser } = await apiRequest('/api/auth/me');
+      if (!refreshedUser) throw new Error('Sessiya tugagan. Qayta kiring.');
+      onBalanceUpdate(refreshedUser);
+    } catch (requestError) {
+      setBalanceError(requestError.message);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -172,41 +213,36 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
                   <span className="flex items-center gap-1.5 font-medium">
                     <span>💰</span> Hisob balansingiz
                   </span>
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-emerald-300">
-                    Melfis Hamyon
-                  </span>
+                  <button
+                    type="button"
+                    onClick={handleRefreshBalance}
+                    className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-emerald-100 hover:bg-white/20"
+                    title="Balansni yangilash"
+                  >
+                    <RefreshCw size={11} /> Yangilash
+                  </button>
                 </div>
                 <div className="mt-2 text-2xl font-serif font-extrabold text-white tracking-tight">
-                  {formatPrice(user.balance || 0)}
+                  {formatPrice(user.balance ?? 0)}
                 </div>
                 <p className="mt-1 text-[11px] text-emerald-100/70">
                   Ushbu balans bilan buyurtmalar uchun to‘lov qilishingiz mumkin
                 </p>
                 
-                <div className="mt-3 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleTelegramTopUp()}
-                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-[#2AABEE] hover:bg-[#229ED9] text-white py-2.5 px-3 text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
-                    title="Telegram bot orqali hisobni to‘ldirish"
-                  >
-                    <Send size={13} className="-rotate-12" />
-                    <span>Telegram bot orqali to‘ldirish</span>
-                  </button>
+                <div className="mt-3">
                   <button
                     type="button"
                     onClick={() => setShowTopUp(!showTopUp)}
-                    className="flex items-center justify-center gap-1 rounded-xl bg-white/15 hover:bg-white/25 text-white py-2.5 px-3 text-xs font-semibold border border-white/20 transition-all cursor-pointer"
-                    title="Summani tanlash"
+                    className="w-full flex items-center justify-center gap-1 rounded-xl bg-white/15 hover:bg-white/25 text-white py-2.5 px-3 text-xs font-semibold border border-white/20 transition-all cursor-pointer"
                   >
-                    <span>{showTopUp ? '✕' : '+ Summa'}</span>
+                    <span>{showTopUp ? 'To‘ldirishni yopish' : 'Balansni to‘ldirish'}</span>
                   </button>
                 </div>
 
                 {showTopUp && (
                   <div className="mt-3 pt-3 border-t border-white/15 space-y-2.5 animate-fadeIn">
                     <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-200">
-                      <span>Summani tanlang va botga yuboring:</span>
+                      <span>Summani tanlab, to‘lov so‘rovini yarating:</span>
                       <span className="text-[10px] text-sky-200">@{SHOP_INFO.telegramUsername}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -214,35 +250,52 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
                         <button
                           key={amt}
                           type="button"
-                          onClick={() => handleTelegramTopUp(amt)}
-                          className="py-2 px-2.5 rounded-lg bg-white/15 hover:bg-[#2AABEE]/40 text-white text-xs font-bold transition-all border border-white/20 active:scale-95 cursor-pointer flex items-center justify-between"
-                          title={`${formatPrice(amt)} bilan Telegram botga o‘tish`}
+                          onClick={() => handleRequestTopUp(amt)}
+                          disabled={submittingTopupAmount !== null}
+                          className="py-2 px-2.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-all border border-white/20 active:scale-95 cursor-pointer flex items-center justify-between disabled:cursor-wait disabled:opacity-60"
                         >
-                          <span>+{formatPrice(amt)}</span>
-                          <Send size={11} className="text-sky-300" />
+                          <span>{submittingTopupAmount === amt ? 'Yuborilmoqda...' : `+${formatPrice(amt)}`}</span>
+                          {submittingTopupAmount !== amt && <Send size={11} className="text-sky-300" />}
                         </button>
                       ))}
                     </div>
-
-                    <div className="pt-1 flex items-center justify-between text-[10px] text-emerald-100/70 border-t border-white/10">
-                      <span>Tezkor sinov balansi (avtomatik):</span>
-                      <button
-                        type="button"
-                        onClick={() => handleTopUp(200000)}
-                        className="underline text-emerald-200 hover:text-white cursor-pointer font-bold"
+                    <p className="text-[11px] leading-relaxed text-emerald-100/80">
+                      So‘rov yuborilgach, to‘lovni Telegram orqali yuboring. Pul faqat admin to‘lovni tekshirib tasdiqlagandan keyin balansga qo‘shiladi.
+                    </p>
+                    {topupTelegramUrl && (
+                      <a
+                        href={topupTelegramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-[#2AABEE] px-3 py-2.5 text-xs font-bold text-white hover:bg-[#229ED9]"
                       >
-                        +200 000 so‘m
-                      </button>
-                    </div>
-
-                    {topUpSuccess && (
-                      <div className="p-2 rounded-lg bg-emerald-500/30 text-emerald-100 text-xs text-center font-medium">
-                        {topUpSuccess}
-                      </div>
+                        <Send size={13} /> Telegramda to‘lovni yuborish
+                      </a>
                     )}
                   </div>
                 )}
+                {balanceError && <p role="alert" className="mt-2 text-[11px] text-red-100">{balanceError}</p>}
               </div>
+
+              <section className="space-y-2 rounded-2xl border border-stone-200 bg-white p-3">
+                <h3 className="text-xs font-bold text-stone-800">Balans to‘ldirish so‘rovlari</h3>
+                {isLoadingTopups && <p className="text-xs text-stone-500">So‘rovlar yuklanmoqda...</p>}
+                {topupsError && <p role="alert" className="text-xs text-red-700">{topupsError}</p>}
+                {!isLoadingTopups && topups.length === 0 && !topupsError && (
+                  <p className="text-xs text-stone-500">Hozircha so‘rovlar yo‘q.</p>
+                )}
+                {topups.slice(0, 5).map((topup) => (
+                  <div key={topup.id} className="flex items-center justify-between gap-3 border-t border-stone-100 pt-2 text-xs">
+                    <div>
+                      <p className="font-semibold text-stone-800">{formatPrice(Number(topup.amount))}</p>
+                      <p className="text-[10px] text-stone-500">{new Date(topup.created_at).toLocaleString('uz-UZ')}</p>
+                    </div>
+                    <span className={`text-right ${topup.status === 'approved' ? 'text-emerald-700' : topup.status === 'rejected' ? 'text-red-600' : 'text-amber-700'}`}>
+                      {TOP_UP_STATUS_LABELS[topup.status] || topup.status}
+                    </span>
+                  </div>
+                ))}
+              </section>
 
               {/* Action buttons */}
               <div className="space-y-2 pt-1">

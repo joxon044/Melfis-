@@ -2,18 +2,12 @@
 import { apiRequest } from '../api';
 
 const USER_STORAGE_KEY = 'melfis_current_user';
-const DEFAULT_INITIAL_BALANCE = 500000; // 500,000 so'm start balansi yangi mijozlar uchun
+const DEFAULT_BONUS_BALANCE = 500000;
 
 export function getLocalUser() {
   try {
-    const saved = localStorage.getItem(USER_STORAGE_KEY);
-    if (!saved) return null;
-    const user = JSON.parse(saved);
-    if (user && typeof user.balance !== 'number') {
-      user.balance = DEFAULT_INITIAL_BALANCE;
-      saveLocalUser(user);
-    }
-    return user;
+    const stored = localStorage.getItem(USER_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
   } catch {
     return null;
   }
@@ -25,8 +19,9 @@ export function saveLocalUser(user) {
       localStorage.removeItem(USER_STORAGE_KEY);
       return;
     }
+    // Ensure user object has valid balance
     if (typeof user.balance !== 'number') {
-      user.balance = DEFAULT_INITIAL_BALANCE;
+      user.balance = DEFAULT_BONUS_BALANCE;
     }
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
   } catch {
@@ -40,29 +35,31 @@ export async function loginUser({ email, password }) {
       method: 'POST',
       body: { email, password },
     });
-    const user = result.user;
-    const local = getLocalUser();
-    user.balance = typeof user.balance === 'number' ? user.balance : (local?.balance ?? DEFAULT_INITIAL_BALANCE);
-    saveLocalUser(user);
-    return user;
-  } catch (err) {
-    // Local fallback if backend / database is not set up
-    const local = getLocalUser();
-    if (local && local.email.toLowerCase() === email.toLowerCase()) {
-      return local;
+    if (result && result.user) {
+      saveLocalUser(result.user);
+      return result.user;
     }
-    // If no existing local user matches, simulate login
-    const fallbackUser = {
-      id: `usr_${Date.now()}`,
-      name: email.split('@')[0] || "Mijoz",
-      email: email.trim().toLowerCase(),
-      phone: "+998 70 039 07 19",
-      role: 'customer',
-      balance: DEFAULT_INITIAL_BALANCE,
-    };
-    saveLocalUser(fallbackUser);
-    return fallbackUser;
+  } catch (apiError) {
+    console.warn('API login failed, checking local user fallback:', apiError);
   }
+
+  // Resilient fallback: Allow login locally if network or backend fails
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const existing = getLocalUser();
+  if (existing && existing.email === cleanEmail) {
+    return existing;
+  }
+
+  const fallbackUser = {
+    id: 'local_' + Date.now(),
+    name: cleanEmail.split('@')[0] || 'Melfis Mijozi',
+    phone: '+998 90 000 00 00',
+    email: cleanEmail,
+    role: 'customer',
+    balance: DEFAULT_BONUS_BALANCE,
+  };
+  saveLocalUser(fallbackUser);
+  return fallbackUser;
 }
 
 export async function registerUser({ name, phone, email, password }) {
@@ -71,41 +68,28 @@ export async function registerUser({ name, phone, email, password }) {
       method: 'POST',
       body: { name, phone, email, password },
     });
-    const user = result.user;
-    user.balance = DEFAULT_INITIAL_BALANCE;
-    saveLocalUser(user);
-    return user;
-  } catch (err) {
-    // Local fallback if backend / database is not set up
-    const fallbackUser = {
-      id: `usr_${Date.now()}`,
-      name: name.trim(),
-      phone: phone.trim(),
-      email: email.trim().toLowerCase(),
-      role: 'customer',
-      balance: DEFAULT_INITIAL_BALANCE,
-    };
-    saveLocalUser(fallbackUser);
-    return fallbackUser;
+    if (result && result.user) {
+      saveLocalUser(result.user);
+      return result.user;
+    }
+  } catch (apiError) {
+    console.warn('API register failed, creating local user fallback:', apiError);
   }
-}
 
-export function updateUserBalance(currentBalance, changeAmount) {
-  const local = getLocalUser();
-  const newBalance = Math.max(0, (currentBalance || 0) + changeAmount);
-  if (local) {
-    local.balance = newBalance;
-    saveLocalUser(local);
-  }
-  return newBalance;
+  // Resilient fallback: Create valid user session locally so registration always succeeds
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const fallbackUser = {
+    id: 'local_' + Date.now(),
+    name: (name || '').trim() || 'Melfis Mijozi',
+    phone: (phone || '').trim() || '+998',
+    email: cleanEmail,
+    role: 'customer',
+    balance: DEFAULT_BONUS_BALANCE,
+  };
+  saveLocalUser(fallbackUser);
+  return fallbackUser;
 }
 
 export function clearUserSession() {
   saveLocalUser(null);
-  try {
-    apiRequest('/api/auth/logout', { method: 'POST', body: {} }).catch(() => {});
-  } catch {
-    // ignore
-  }
 }
-

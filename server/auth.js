@@ -75,7 +75,7 @@ export async function getSessionUser(req) {
   if (!token || token.length > 128) return null;
 
   const result = await getPool().query(
-    `SELECT u.id, u.email, u.name, u.phone, u.role
+    `SELECT u.id, u.email, u.name, u.phone, u.role, u.balance
        FROM sessions s
        JOIN users u ON u.id = s.user_id
       WHERE s.token_hash = $1 AND s.expires_at > NOW()`,
@@ -85,11 +85,16 @@ export async function getSessionUser(req) {
 }
 
 export function publicUser(user) {
+  const balance = Number(user.balance);
+  if (!Number.isSafeInteger(balance) || balance < 0) {
+    throw new Error('Foydalanuvchi balansi noto‘g‘ri.');
+  }
   return {
     id: user.id,
     email: user.email,
     name: user.name,
     phone: user.phone,
     role: user.role,
+    balance,
   };
 }

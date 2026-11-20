@@ -102,7 +102,7 @@ export function validateOrder(body, user) {
   if (!user || typeof user.name !== 'string' || typeof user.phone !== 'string') {
     throw badRequest('Akkaunt ma’lumotlari noto‘g‘ri.');
   }
-  const paymentMethods = ['Click', 'Payme', 'Naqd / Karta'];
+  const paymentMethods = ['Click', 'Payme', 'Naqd / Karta', 'Melfis Balansi'];
   if (!paymentMethods.includes(body.paymentMethod)) {
     throw badRequest('To‘lov turini tanlang.');
   }

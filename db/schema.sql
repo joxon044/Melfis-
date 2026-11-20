@@ -4,9 +4,12 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
   phone TEXT NOT NULL,
+  balance BIGINT NOT NULL DEFAULT 0 CHECK (balance >= 0),
   role TEXT NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS balance BIGINT NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS sessions (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -58,3 +61,19 @@ CREATE TABLE IF NOT EXISTS order_items (
 );
 
 CREATE INDEX IF NOT EXISTS order_items_order_idx ON order_items (order_id);
+
+CREATE TABLE IF NOT EXISTS wallet_topups (
+  id UUID PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id),
+  amount BIGINT NOT NULL CHECK (amount IN (100000, 200000, 500000, 1000000)),
+  status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'approved', 'rejected')),
+  processed_by BIGINT REFERENCES users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  processed_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS wallet_topups_user_created_idx ON wallet_topups (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS wallet_topups_status_created_idx ON wallet_topups (status, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS wallet_topups_one_pending_per_user_idx
+  ON wallet_topups (user_id) WHERE status = 'pending';

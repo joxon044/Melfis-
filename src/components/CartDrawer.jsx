@@ -33,7 +33,6 @@ export default function CartDrawer({
   currentUser,
   onRequireAuth,
   onCreateOrder,
-  onDeductBalance,
   onOpenAccount,
 }) {
   // Checkout form state
@@ -161,10 +160,6 @@ export default function CartDrawer({
         } else {
           window.open(url, '_blank');
         }
-      }
-
-      if (paymentMethod === 'Melfis Balansi' && onDeductBalance) {
-        onDeductBalance(grandTotal);
       }
 
       triggerConfetti();

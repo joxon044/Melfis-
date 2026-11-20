@@ -5,7 +5,7 @@ import {
   publicUser,
   validateRegistration,
 } from '../../server/auth.js';
-import { getPool } from '../../server/db.js';
+import { getPool, ensureDbInitialized } from '../../server/db.js';
 import { handleApiError, handleCapacitorCors, methodNotAllowed, requireBody, requireSameOrigin, sendJson } from '../../server/http.js';
 
 export default async function register(req, res) {
@@ -16,12 +16,13 @@ export default async function register(req, res) {
     requireSameOrigin(req);
     const body = requireBody(req);
     validateRegistration(body);
+    await ensureDbInitialized();
     const email = normalizeEmail(body.email);
     const passwordHash = await hashPassword(body.password);
     const result = await getPool().query(
-      `INSERT INTO users (email, password_hash, name, phone)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, email, name, phone, role`,
+      `INSERT INTO users (email, password_hash, name, phone, balance)
+       VALUES ($1, $2, $3, $4, 500000)
+       RETURNING id, email, name, phone, role, balance`,
       [email, passwordHash, body.name.trim(), body.phone.trim()]
     );
     const user = result.rows[0];

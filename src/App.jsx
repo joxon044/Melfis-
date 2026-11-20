@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { PRODUCTS, SHOP_INFO } from './data/flowers';
+import { PRODUCTS } from './data/flowers';
 import { apiRequest } from './api';
 import { getLocalUser, saveLocalUser, clearUserSession } from './services/userService';
 
@@ -63,6 +63,7 @@ export default function App() {
   const [orderSuccessData, setOrderSuccessData] = useState(null);
   const [activeMobileTab, setActiveMobileTab] = useState('home');
   const [currentUser, setCurrentUser] = useState(() => getLocalUser());
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -88,38 +89,28 @@ export default function App() {
     apiRequest('/api/auth/me')
       .then(({ user }) => {
         if (isActive && user) {
-          const local = getLocalUser();
-          user.balance = typeof user.balance === 'number' ? user.balance : (local?.balance ?? 500000);
           saveLocalUser(user);
           setCurrentUser(user);
+          setAuthError('');
         }
       })
-      .catch((error) => {
-        if (isActive) setAuthError(error.message);
+      .catch(() => {
+        // If API fails or is offline, keep the local user session safe
+        if (isActive) {
+          const local = getLocalUser();
+          if (local) {
+            setCurrentUser(local);
+          }
+          setAuthError('');
+        }
+      })
+      .finally(() => {
+        if (isActive) setIsSessionLoading(false);
       });
     return () => {
       isActive = false;
     };
   }, []);
-
-  const handleUpdateBalance = (newBalance) => {
-    setCurrentUser((prev) => {
-      if (!prev) return null;
-      const updated = { ...prev, balance: newBalance };
-      saveLocalUser(updated);
-      return updated;
-    });
-  };
-
-  const handleDeductBalance = (amount) => {
-    setCurrentUser((prev) => {
-      if (!prev) return null;
-      const newBal = Math.max(0, (prev.balance || 0) - amount);
-      const updated = { ...prev, balance: newBal };
-      saveLocalUser(updated);
-      return updated;
-    });
-  };
 
   const handleLogout = () => {
     clearUserSession();
@@ -223,13 +214,23 @@ export default function App() {
     return <OfflineScreen onRetry={() => setIsOnline(navigator.onLine)} />;
   }
 
+  if (isSessionLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#FAF7F2] text-sm font-medium text-stone-600">
+        Melfis yuklanmoqda...
+      </div>
+    );
+  }
+
   // Saytga kirishdan oldin ro'yxatdan o'tish talab qilinadi
   if (!currentUser) {
     return (
       <AuthGate
+        initialError={authError}
         onAuthSuccess={(user) => {
           saveLocalUser(user);
           setCurrentUser(user);
+          setAuthError('');
         }}
       />
     );
@@ -364,22 +365,22 @@ export default function App() {
         onClose={() => setIsCartOpen(false)}
         currentUser={currentUser}
         onRequireAuth={() => setIsAccountOpen(true)}
-        onCreateOrder={(order) => 
-          apiRequest('/api/orders', { method: 'POST', body: order })
-            .then((result) => result.order)
-            .catch(() => ({
-              id: `ord_${Date.now()}`,
-              orderNumber: `MF-${Date.now().toString(36).toUpperCase()}`,
-              total_price: order.totalPrice,
-              ...order
-            }))
-        }
+        onCreateOrder={(order) => apiRequest('/api/orders', { method: 'POST', body: order }).then((result) => result.order)}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveFromCart}
         onClearCart={handleClearCart}
-        onOrderSuccess={(orderData) => setOrderSuccessData(orderData)}
-        onDeductBalance={handleDeductBalance}
+        onOrderSuccess={(orderData) => {
+          setOrderSuccessData(orderData);
+          if (Number.isSafeInteger(orderData.balance)) {
+            setCurrentUser((user) => {
+              if (!user) return null;
+              const updated = { ...user, balance: orderData.balance };
+              saveLocalUser(updated);
+              return updated;
+            });
+          }
+        }}
         onOpenAccount={() => {
           setIsCartOpen(false);
           setIsAccountOpen(true);
@@ -412,7 +413,10 @@ export default function App() {
           setIsAccountOpen(false);
         }}
         onLogout={handleLogout}
-        onUpdateBalance={handleUpdateBalance}
+        onBalanceUpdate={(updatedUser) => {
+          saveLocalUser(updatedUser);
+          setCurrentUser(updatedUser);
+        }}
         onOpenAdmin={() => {
           setIsAccountOpen(false);
           setIsAdminPanelOpen(true);
