@@ -14,7 +14,9 @@ import {
   User, 
   CreditCard,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  LocateFixed,
+  ExternalLink
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { formatPrice, generateTelegramOrderUrl } from '../utils/formatters';
@@ -38,7 +40,9 @@ export default function CartDrawer({
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState(SAMARKAND_DISTRICTS[0]);
-  const [address, setAddress] = useState('');
+  const [deliveryLocation, setDeliveryLocation] = useState(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('Bugun (Tezkor)');
   const [deliveryTime, setDeliveryTime] = useState('Eng yaqin vaqtda (30-60 daq)');
   const [isSurprise, setIsSurprise] = useState(false);
@@ -54,6 +58,39 @@ export default function CartDrawer({
   const itemsSubtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = selectedDistrict ? selectedDistrict.deliveryFee : 0;
   const grandTotal = itemsSubtotal + deliveryFee;
+  const yandexLocationUrl = deliveryLocation
+    ? `https://yandex.uz/maps/?ll=${deliveryLocation.longitude}%2C${deliveryLocation.latitude}&z=16&pt=${deliveryLocation.longitude}%2C${deliveryLocation.latitude},pm2rdm`
+    : '';
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Bu qurilmada joylashuvni aniqlash qo‘llab-quvvatlanmaydi.');
+      return;
+    }
+
+    setLocationError('');
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setDeliveryLocation({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+        setIsLocating(false);
+        const mapUrl = `https://yandex.uz/maps/?ll=${coords.longitude}%2C${coords.latitude}&z=16&pt=${coords.longitude}%2C${coords.latitude},pm2rdm`;
+        window.open(mapUrl, '_blank', 'noopener,noreferrer');
+      },
+      (error) => {
+        setLocationError(
+          error.code === error.PERMISSION_DENIED
+            ? 'Joylashuv ruxsati berilmadi. Brauzer sozlamalaridan ruxsat bering.'
+            : 'Joylashuvni aniqlab bo‘lmadi. Qayta urinib ko‘ring.'
+        );
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  };
 
   const triggerConfetti = () => {
     confetti({
@@ -104,7 +141,9 @@ export default function CartDrawer({
         customerName: resolvedName,
         phone: resolvedPhone,
         district: selectedDistrict.name,
-        address,
+        address: deliveryLocation
+          ? `Koordinatalar: ${deliveryLocation.latitude}, ${deliveryLocation.longitude}`
+          : '',
         deliveryDate,
         deliveryTime,
         isSurprise,
@@ -290,13 +329,35 @@ export default function CartDrawer({
                     ))}
                   </select>
 
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Aniq manzil (Ko'cha, uy, mo'ljal yoki xonadon raqami)..."
-                    className="w-full text-xs p-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  />
+                  <button
+                    type="button"
+                    onClick={handleLocateMe}
+                    disabled={isLocating}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs font-semibold text-rose-800 transition-colors hover:bg-rose-100 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    <LocateFixed size={16} />
+                    {isLocating ? 'Joylashuv aniqlanmoqda...' : 'Joylashuvimni Yandex xaritada ko‘rsatish'}
+                  </button>
+                  {locationError && (
+                    <p role="alert" className="text-xs text-red-600">{locationError}</p>
+                  )}
+                  {deliveryLocation && (
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-amber-50/90 border border-amber-200 animate-fadeIn">
+                      <div className="flex items-center gap-2 text-xs text-amber-950 font-medium min-w-0">
+                        <MapPin size={16} className="text-amber-600 shrink-0" />
+                        <span className="truncate">Joylashuv aniqlandi</span>
+                      </div>
+                      <a
+                        href={yandexLocationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FC3F1D] hover:bg-[#E03010] text-white text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                      >
+                        <ExternalLink size={13} />
+                        <span>Alohida saytda ochish</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Surprise Order Toggle */}

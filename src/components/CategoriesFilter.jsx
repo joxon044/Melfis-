@@ -39,7 +39,7 @@ export default function CategoriesFilter({
     <div className="space-y-6">
       
       {/* Category Pills (Horizontal scroll on mobile) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         {CATEGORIES.map((cat) => {
           const Icon = iconMap[cat.icon] || Sparkles;
           const isActive = selectedCategory === cat.id;
@@ -65,7 +65,7 @@ export default function CategoriesFilter({
       <div className="bg-white p-4 rounded-2xl border border-stone-200/80 shadow-xs flex flex-col 2xl:flex-row items-stretch 2xl:items-center justify-between gap-4">
         
         {/* Occasions Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 2xl:pb-0 scrollbar-none text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 2xl:pb-0 scrollbar-none text-xs [&::-webkit-scrollbar]:hidden">
           <span className="text-stone-400 font-medium shrink-0 mr-1 hidden sm:inline">Mavzular:</span>
           {OCCASIONS.map((occ) => {
             const isSelected = selectedOccasion === occ;
