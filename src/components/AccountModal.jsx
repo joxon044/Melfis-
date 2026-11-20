@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { KeyRound, LogOut, Mail, PackageCheck, Phone, ShieldCheck, User, X } from 'lucide-react';
+import { KeyRound, LogOut, Mail, PackageCheck, Phone, Send, ShieldCheck, User, X } from 'lucide-react';
 import { apiRequest } from '../api';
 import { formatPrice } from '../utils/formatters';
+import { SHOP_INFO } from '../data/flowers';
 
 const ORDER_STATUS_LABELS = {
   new: 'Yangi',
@@ -47,6 +48,19 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
       setTopUpSuccess('');
       setShowTopUp(false);
     }, 1400);
+  };
+
+  const handleTelegramTopUp = (amount = null) => {
+    const sumLine = amount ? `\n💵 To'ldirmoqchi bo'lgan summa: ${formatPrice(amount)}` : '';
+    const text = encodeURIComponent(
+      `Assalomu alaykum! Melfis Flower hisobimni to'ldirmoqchiman 🌸\n` +
+      `👤 Mijoz: ${user?.name || 'Mijoz'}\n` +
+      `📞 Telefon: ${user?.phone || ''}\n` +
+      `💰 Joriy balans: ${formatPrice(user?.balance || 0)}` +
+      sumLine +
+      `\n\nIltimos, hisobimni to'ldirish uchun to'lov ma'lumotlarini (Click / Payme) yuborsangiz.`
+    );
+    window.open(`https://t.me/${SHOP_INFO.telegramUsername}?text=${text}`, '_blank');
   };
 
   const handleSubmit = async (event) => {
@@ -169,33 +183,58 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
                   Ushbu balans bilan buyurtmalar uchun to‘lov qilishingiz mumkin
                 </p>
                 
-                <div className="mt-3">
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleTelegramTopUp()}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-[#2AABEE] hover:bg-[#229ED9] text-white py-2.5 px-3 text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
+                    title="Telegram bot orqali hisobni to‘ldirish"
+                  >
+                    <Send size={13} className="-rotate-12" />
+                    <span>Telegram bot orqali to‘ldirish</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => setShowTopUp(!showTopUp)}
-                    className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-white text-[#1C3F3A] py-2 text-xs font-bold shadow-xs hover:bg-emerald-50 transition-all cursor-pointer"
+                    className="flex items-center justify-center gap-1 rounded-xl bg-white/15 hover:bg-white/25 text-white py-2.5 px-3 text-xs font-semibold border border-white/20 transition-all cursor-pointer"
+                    title="Summani tanlash"
                   >
-                    <span>{showTopUp ? '✕' : '+'}</span> {showTopUp ? 'Yopish' : 'Balansni to‘ldirish'}
+                    <span>{showTopUp ? '✕' : '+ Summa'}</span>
                   </button>
                 </div>
 
                 {showTopUp && (
                   <div className="mt-3 pt-3 border-t border-white/15 space-y-2.5 animate-fadeIn">
-                    <div className="text-[11px] font-semibold text-emerald-200">
-                      To‘ldirish summasini tanlang:
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-200">
+                      <span>Summani tanlang va botga yuboring:</span>
+                      <span className="text-[10px] text-sky-200">@{SHOP_INFO.telegramUsername}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       {[100000, 200000, 500000, 1000000].map((amt) => (
                         <button
                           key={amt}
                           type="button"
-                          onClick={() => handleTopUp(amt)}
-                          className="py-1.5 px-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-all border border-white/20 active:scale-95 cursor-pointer"
+                          onClick={() => handleTelegramTopUp(amt)}
+                          className="py-2 px-2.5 rounded-lg bg-white/15 hover:bg-[#2AABEE]/40 text-white text-xs font-bold transition-all border border-white/20 active:scale-95 cursor-pointer flex items-center justify-between"
+                          title={`${formatPrice(amt)} bilan Telegram botga o‘tish`}
                         >
-                          +{formatPrice(amt)}
+                          <span>+{formatPrice(amt)}</span>
+                          <Send size={11} className="text-sky-300" />
                         </button>
                       ))}
                     </div>
+
+                    <div className="pt-1 flex items-center justify-between text-[10px] text-emerald-100/70 border-t border-white/10">
+                      <span>Tezkor sinov balansi (avtomatik):</span>
+                      <button
+                        type="button"
+                        onClick={() => handleTopUp(200000)}
+                        className="underline text-emerald-200 hover:text-white cursor-pointer font-bold"
+                      >
+                        +200 000 so‘m
+                      </button>
+                    </div>
+
                     {topUpSuccess && (
                       <div className="p-2 rounded-lg bg-emerald-500/30 text-emerald-100 text-xs text-center font-medium">
                         {topUpSuccess}
