@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS balance BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE users ALTER COLUMN balance SET DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS sessions (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -77,3 +78,30 @@ CREATE INDEX IF NOT EXISTS wallet_topups_user_created_idx ON wallet_topups (user
 CREATE INDEX IF NOT EXISTS wallet_topups_status_created_idx ON wallet_topups (status, created_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS wallet_topups_one_pending_per_user_idx
   ON wallet_topups (user_id) WHERE status = 'pending';
+
+CREATE TABLE IF NOT EXISTS registration_verifications (
+  id UUID PRIMARY KEY,
+  email TEXT NOT NULL,
+  name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  code_hash TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS registration_verifications_pending_email_idx
+  ON registration_verifications (email);
+CREATE INDEX IF NOT EXISTS registration_verifications_expiry_idx
+  ON registration_verifications (expires_at);
+
+UPDATE users u
+   SET balance = 0
+ WHERE u.balance = 500000
+   AND NOT EXISTS (
+     SELECT 1
+       FROM wallet_topups wt
+      WHERE wt.user_id = u.id
+        AND wt.status = 'approved'
+   );

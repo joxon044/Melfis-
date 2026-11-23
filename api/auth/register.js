@@ -7,6 +7,7 @@ import {
 } from '../../server/auth.js';
 import { getPool, ensureDbInitialized } from '../../server/db.js';
 import { handleApiError, handleCapacitorCors, methodNotAllowed, requireBody, requireSameOrigin, sendJson } from '../../server/http.js';
+import { sendTelegramRegistrationNotification } from '../../server/telegram.js';
 
 export default async function register(req, res) {
   if (handleCapacitorCors(req, res)) return;
@@ -27,6 +28,14 @@ export default async function register(req, res) {
     );
     const user = result.rows[0];
     await createSession(req, res, user.id);
+    
+    // Telegram notification if bot configured
+    try {
+      await sendTelegramRegistrationNotification(user);
+    } catch {
+      // Non-blocking
+    }
+
     return sendJson(res, 201, { user: publicUser(user) });
   } catch (error) {
     if (error.code === '23505') {

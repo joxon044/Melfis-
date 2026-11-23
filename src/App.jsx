@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { PRODUCTS } from './data/flowers';
 import { apiRequest } from './api';
-import { getLocalUser, saveLocalUser, clearUserSession } from './services/userService';
+import { saveLocalUser, clearUserSession } from './services/userService';
 
 // Components
 import Navbar from './components/Navbar';
@@ -62,7 +62,7 @@ export default function App() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [orderSuccessData, setOrderSuccessData] = useState(null);
   const [activeMobileTab, setActiveMobileTab] = useState('home');
-  const [currentUser, setCurrentUser] = useState(() => getLocalUser());
+  const [currentUser, setCurrentUser] = useState(null);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
@@ -88,19 +88,16 @@ export default function App() {
     let isActive = true;
     apiRequest('/api/auth/me')
       .then(({ user }) => {
-        if (isActive && user) {
+        if (isActive) {
           saveLocalUser(user);
           setCurrentUser(user);
           setAuthError('');
         }
       })
       .catch(() => {
-        // If API fails or is offline, keep the local user session safe
         if (isActive) {
-          const local = getLocalUser();
-          if (local) {
-            setCurrentUser(local);
-          }
+          saveLocalUser(null);
+          setCurrentUser(null);
           setAuthError('');
         }
       })
@@ -226,7 +223,6 @@ export default function App() {
   if (!currentUser) {
     return (
       <AuthGate
-        initialError={authError}
         onAuthSuccess={(user) => {
           saveLocalUser(user);
           setCurrentUser(user);

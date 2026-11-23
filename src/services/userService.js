@@ -19,8 +19,7 @@ export function saveLocalUser(user) {
       localStorage.removeItem(USER_STORAGE_KEY);
       return;
     }
-    // Ensure user object has valid balance
-    if (typeof user.balance !== 'number') {
+    if (typeof user.balance !== 'number' || user.balance < 0) {
       user.balance = DEFAULT_BONUS_BALANCE;
     }
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
@@ -30,10 +29,11 @@ export function saveLocalUser(user) {
 }
 
 export async function loginUser({ email, password }) {
+  const cleanEmail = (email || '').trim().toLowerCase();
   try {
     const result = await apiRequest('/api/auth/login', {
       method: 'POST',
-      body: { email, password },
+      body: { email: cleanEmail, password },
     });
     if (result && result.user) {
       saveLocalUser(result.user);
@@ -44,7 +44,6 @@ export async function loginUser({ email, password }) {
   }
 
   // Resilient fallback: Allow login locally if network or backend fails
-  const cleanEmail = (email || '').trim().toLowerCase();
   const existing = getLocalUser();
   if (existing && existing.email === cleanEmail) {
     return existing;
@@ -53,7 +52,7 @@ export async function loginUser({ email, password }) {
   const fallbackUser = {
     id: 'local_' + Date.now(),
     name: cleanEmail.split('@')[0] || 'Melfis Mijozi',
-    phone: '+998 90 000 00 00',
+    phone: '+998 90 123 45 67',
     email: cleanEmail,
     role: 'customer',
     balance: DEFAULT_BONUS_BALANCE,
@@ -63,10 +62,11 @@ export async function loginUser({ email, password }) {
 }
 
 export async function registerUser({ name, phone, email, password }) {
+  const cleanEmail = (email || '').trim().toLowerCase();
   try {
     const result = await apiRequest('/api/auth/register', {
       method: 'POST',
-      body: { name, phone, email, password },
+      body: { name, phone, email: cleanEmail, password },
     });
     if (result && result.user) {
       saveLocalUser(result.user);
@@ -76,8 +76,7 @@ export async function registerUser({ name, phone, email, password }) {
     console.warn('API register failed, creating local user fallback:', apiError);
   }
 
-  // Resilient fallback: Create valid user session locally so registration always succeeds
-  const cleanEmail = (email || '').trim().toLowerCase();
+  // Resilient fallback: Create valid user session locally so registration ALWAYS succeeds!
   const fallbackUser = {
     id: 'local_' + Date.now(),
     name: (name || '').trim() || 'Melfis Mijozi',

@@ -1,6 +1,73 @@
 /**
  * Telegram Bot orqali yangi buyurtmalarni do'kon egasi yoki guruhiga yuborish
  */
+export async function sendTelegramRegistrationNotification(user) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+
+  const escapeHtml = (value) => String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+  const message = `
+🆕 <b>YANGI RO‘YXATDAN O‘TISH</b>
+━━━━━━━━━━━━━━━━━━━━
+👤 <b>Ism:</b> ${escapeHtml(user.name)}
+📞 <b>Telefon:</b> <code>${escapeHtml(user.phone)}</code>
+📧 <b>Email:</b> <code>${escapeHtml(user.email)}</code>
+⏰ <b>Vaqt:</b> ${new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}
+━━━━━━━━━━━━━━━━━━━━
+`.trim();
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'HTML',
+      }),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      console.error('Telegram registration notification failed:', error);
+    }
+  } catch (error) {
+    console.error('Telegram registration notification failed:', error);
+  }
+}
+
+export async function sendTelegramVerificationCode({ phone, email, code }) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) {
+    throw new Error('Telegram kod xizmati sozlanmagan.');
+  }
+
+  const escapeHtml = (value) => String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: `🔐 <b>MELFIS ro‘yxatdan o‘tish kodi:</b> <code>${code}</code>\n\n📞 ${escapeHtml(phone)}\n📧 ${escapeHtml(email)}\n\nKod 10 daqiqa davomida amal qiladi.`,
+      parse_mode: 'HTML',
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    console.error('Telegram verification code failed:', error);
+    throw new Error('Telegramga tasdiqlash kodi yuborilmadi.');
+  }
+}
+
 export async function sendTelegramOrderNotification(order) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -59,4 +126,3 @@ ${itemsText}
     console.error('Telegram bildirishnomasini yuborib bo‘lmadi:', error);
   }
 }
-

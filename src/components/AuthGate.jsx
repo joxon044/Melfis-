@@ -39,14 +39,16 @@ export default function AuthGate({ onAuthSuccess, initialError }) {
         setError('Iltimos, to‘g‘ri email manzilini kiriting.');
         return;
       }
-      if (!password || password.length < 10) {
-        setError('Parol kamida 10 ta belgidan iborat bo‘lishi kerak.');
+      if (!password || password.length < 8) {
+        setError('Parol kamida 8 ta belgidan iborat bo‘lishi kerak.');
         return;
       }
       setLoading(true);
       try {
         const user = await registerUser({ name, phone, email, password });
-        if (onAuthSuccess) onAuthSuccess(user);
+        if (onAuthSuccess) {
+          onAuthSuccess(user);
+        }
       } catch (err) {
         setError(err.message || 'Ro‘yxatdan o‘tishda xatolik yuz berdi.');
       } finally {
@@ -185,7 +187,7 @@ export default function AuthGate({ onAuthSuccess, initialError }) {
               <input
                 type="password"
                 required
-                placeholder={mode === 'register' ? 'Kamida 10 ta belgi' : 'Parolingiz'}
+                placeholder={mode === 'register' ? 'Kamida 8 ta belgi' : 'Parolingiz'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full text-xs py-2.5 px-3 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1C3F3A]/20 transition-all font-medium"

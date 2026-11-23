@@ -6,10 +6,10 @@ let pool;
 let isDbInitialized = false;
 
 export function getPool() {
-  const connectionString = 
-    process.env.DATABASE_URL || 
-    process.env.POSTGRES_URL || 
-    process.env.POSTGRES_PRISMA_URL || 
+  const connectionString =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
     process.env.POSTGRES_URL_NON_POOLING;
 
   if (!connectionString) {
@@ -56,6 +56,8 @@ export async function ensureDbInitialized() {
         expires_at TIMESTAMPTZ NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+      CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions (expires_at);
+      CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions (user_id);
     `);
     isDbInitialized = true;
   } catch (err) {

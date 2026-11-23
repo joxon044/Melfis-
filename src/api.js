@@ -10,19 +10,26 @@ export async function apiRequest(path, { method = 'GET', body } = {}) {
     throw new Error('Mobil ilova backendiga ulanish sozlanmagan. VITE_API_BASE_URL manzilini kiriting.');
   }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    method,
-    credentials: 'include',
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(`${apiBaseUrl}${path}`, {
+      method,
+      credentials: 'include',
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new Error('Server bilan aloqa o‘rnatilmadi.');
+  }
 
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) {
-    throw new Error('Backend javob bermadi. Vercel va PostgreSQL sozlamalarini tekshiring.');
+    throw new Error('Backend javob bermadi.');
   }
 
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.error || 'So‘rov bajarilmadi.');
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.error || 'So‘rov bajarilmadi.');
+  }
   return result;
 }

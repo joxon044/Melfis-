@@ -52,10 +52,12 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
   useEffect(() => {
     if (!isOpen || !user) return undefined;
     let isActive = true;
-    setTopupsError('');
     apiRequest('/api/balance/topups')
       .then(({ topups: userTopups }) => {
-        if (isActive) setTopups(userTopups);
+        if (isActive) {
+          setTopups(userTopups);
+          setTopupsError('');
+        }
       })
       .catch((requestError) => {
         if (isActive) setTopupsError(requestError.message);
