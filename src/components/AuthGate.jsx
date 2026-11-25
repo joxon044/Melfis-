@@ -195,13 +195,6 @@ export default function AuthGate({ onAuthSuccess, initialError }) {
             </div>
           </div>
 
-          {mode === 'register' && (
-            <div className="py-1.5 px-3 rounded-xl bg-amber-50/80 border border-amber-200/70 flex items-center gap-2 text-[11px] text-amber-900 font-medium">
-              <span>🎁</span>
-              <span>Ro‘yxatdan o‘tganingizda <strong>500 000 so‘m</strong> sovg‘a balansi beriladi!</span>
-            </div>
-          )}
-
           {(error || initialError) && (
             <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
               {error || initialError}

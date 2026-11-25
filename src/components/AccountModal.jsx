@@ -279,25 +279,22 @@ export default function AccountModal({ isOpen, user, initialError, onClose, onAu
                 {balanceError && <p role="alert" className="mt-2 text-[11px] text-red-100">{balanceError}</p>}
               </div>
 
-              <section className="space-y-2 rounded-2xl border border-stone-200 bg-white p-3">
-                <h3 className="text-xs font-bold text-stone-800">Balans to‘ldirish so‘rovlari</h3>
-                {isLoadingTopups && <p className="text-xs text-stone-500">So‘rovlar yuklanmoqda...</p>}
-                {topupsError && <p role="alert" className="text-xs text-red-700">{topupsError}</p>}
-                {!isLoadingTopups && topups.length === 0 && !topupsError && (
-                  <p className="text-xs text-stone-500">Hozircha so‘rovlar yo‘q.</p>
-                )}
-                {topups.slice(0, 5).map((topup) => (
-                  <div key={topup.id} className="flex items-center justify-between gap-3 border-t border-stone-100 pt-2 text-xs">
-                    <div>
-                      <p className="font-semibold text-stone-800">{formatPrice(Number(topup.amount))}</p>
-                      <p className="text-[10px] text-stone-500">{new Date(topup.created_at).toLocaleString('uz-UZ')}</p>
+              {topups && topups.length > 0 && (
+                <section className="space-y-2 rounded-2xl border border-stone-200 bg-white p-3">
+                  <h3 className="text-xs font-bold text-stone-800">Balans to‘ldirish so‘rovlari</h3>
+                  {topups.slice(0, 5).map((topup) => (
+                    <div key={topup.id} className="flex items-center justify-between gap-3 border-t border-stone-100 pt-2 text-xs">
+                      <div>
+                        <p className="font-semibold text-stone-800">{formatPrice(Number(topup.amount))}</p>
+                        <p className="text-[10px] text-stone-500">{new Date(topup.created_at).toLocaleString('uz-UZ')}</p>
+                      </div>
+                      <span className={`text-right ${topup.status === 'approved' ? 'text-emerald-700' : topup.status === 'rejected' ? 'text-red-600' : 'text-amber-700'}`}>
+                        {TOP_UP_STATUS_LABELS[topup.status] || topup.status}
+                      </span>
                     </div>
-                    <span className={`text-right ${topup.status === 'approved' ? 'text-emerald-700' : topup.status === 'rejected' ? 'text-red-600' : 'text-amber-700'}`}>
-                      {TOP_UP_STATUS_LABELS[topup.status] || topup.status}
-                    </span>
-                  </div>
-                ))}
-              </section>
+                  ))}
+                </section>
+              )}
 
               {/* Action buttons */}
               <div className="space-y-2 pt-1">

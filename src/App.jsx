@@ -62,8 +62,8 @@ export default function App() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [orderSuccessData, setOrderSuccessData] = useState(null);
   const [activeMobileTab, setActiveMobileTab] = useState('home');
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isSessionLoading, setIsSessionLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(() => getLocalUser());
+  const [isSessionLoading, setIsSessionLoading] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -88,16 +88,19 @@ export default function App() {
     let isActive = true;
     apiRequest('/api/auth/me')
       .then(({ user }) => {
-        if (isActive) {
+        if (isActive && user) {
           saveLocalUser(user);
           setCurrentUser(user);
           setAuthError('');
         }
       })
       .catch(() => {
+        // If API fails or is offline, keep the local user session intact!
         if (isActive) {
-          saveLocalUser(null);
-          setCurrentUser(null);
+          const local = getLocalUser();
+          if (local) {
+            setCurrentUser(local);
+          }
           setAuthError('');
         }
       })

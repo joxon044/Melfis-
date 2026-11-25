@@ -2,7 +2,6 @@
 import { apiRequest } from '../api';
 
 const USER_STORAGE_KEY = 'melfis_current_user';
-const DEFAULT_BONUS_BALANCE = 500000;
 
 export function getLocalUser() {
   try {
@@ -20,7 +19,7 @@ export function saveLocalUser(user) {
       return;
     }
     if (typeof user.balance !== 'number' || user.balance < 0) {
-      user.balance = DEFAULT_BONUS_BALANCE;
+      user.balance = 0;
     }
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
   } catch {
@@ -55,7 +54,7 @@ export async function loginUser({ email, password }) {
     phone: '+998 90 123 45 67',
     email: cleanEmail,
     role: 'customer',
-    balance: DEFAULT_BONUS_BALANCE,
+    balance: 0,
   };
   saveLocalUser(fallbackUser);
   return fallbackUser;
@@ -76,14 +75,14 @@ export async function registerUser({ name, phone, email, password }) {
     console.warn('API register failed, creating local user fallback:', apiError);
   }
 
-  // Resilient fallback: Create valid user session locally so registration ALWAYS succeeds!
+  // Initial balance is 0 so'm (no bonus)
   const fallbackUser = {
     id: 'local_' + Date.now(),
     name: (name || '').trim() || 'Melfis Mijozi',
     phone: (phone || '').trim() || '+998',
     email: cleanEmail,
     role: 'customer',
-    balance: DEFAULT_BONUS_BALANCE,
+    balance: 0,
   };
   saveLocalUser(fallbackUser);
   return fallbackUser;
