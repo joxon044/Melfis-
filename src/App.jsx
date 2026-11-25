@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { PRODUCTS } from './data/flowers';
 import { apiRequest } from './api';
-import { saveLocalUser, clearUserSession } from './services/userService';
+import { getLocalUser, saveLocalUser, clearUserSession } from './services/userService';
 
 // Components
 import Navbar from './components/Navbar';
